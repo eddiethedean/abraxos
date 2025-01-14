@@ -48,7 +48,7 @@ def read_csv_chunks(
     3   2   Jasper  31
     4   1   Jill    38
     """
-    bad_lines = []
+    bad_lines: list[list[str]] = []
     kwargs.update({"on_bad_lines": bad_lines.append, "engine": "python"})
     
     chunks = pd.read_csv(path, chunksize=chunksize, **kwargs)
