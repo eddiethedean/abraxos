@@ -1,0 +1,19 @@
+import abraxos
+import pandas as pd
+
+
+def test_read_csv():
+    result = abraxos.read_csv('tests/bad.csv')
+    assert result.bad_lines == [
+        ['', '', '', 'd', '', 'f', '', '', '', '', 'f', '', '', '', ''],
+        ['', 'f', 'f', '5', '6', '7', '8']
+    ]
+    assert result.dataframe.equals(
+        pd.DataFrame(
+            {
+                'id': {0: 1, 1: 2, 2: 3, 3: 2, 4: 1},
+                'name': {0: 'Odos', 1: 'Kayla', 2: 'Dexter', 3: 'Kayla', 4: 'Odos'},
+                'age': {0: '38', 1: '31', 2: 'two', 3: '31', 4: '38'}
+            }
+        )
+    )
