@@ -1,9 +1,11 @@
 import abraxos
 import pandas as pd
 
+from abraxos.extract import ReadCsvResult
 
-def test_read_csv():
-    result = abraxos.read_csv('tests/bad.csv')
+
+def test_read_csv_all() -> None:
+    result: ReadCsvResult = abraxos.extract.read_csv_all('tests/bad.csv')
     assert result.bad_lines == [
         ['', '', '', 'd', '', 'f', '', '', '', '', 'f', '', '', '', ''],
         ['', 'f', 'f', '5', '6', '7', '8']

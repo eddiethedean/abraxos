@@ -57,6 +57,46 @@ def read_csv_chunks(
         bad_lines.clear()
 
 
+def read_csv_all(
+    path: str,
+    **kwargs
+) -> ReadCsvResult:
+    """
+    Reads a CSV file and captures bad lines separately.
+
+    Parameters
+    ----------
+    path : str
+        Path to the CSV file.
+    **kwargs : dict
+        Additional arguments for `pandas.read_csv`.
+
+    Returns
+    -------
+    ReadCsvResult
+
+    Example
+    -------
+    >>> import abraxos
+
+    >>> bad_lines, good_df = abraxos.read_csv('people.csv')
+    >>> bad_lines
+    [['', '', '', 'd', '', 'f', '', '', '', '', 'f', '', '', '', ''],
+    ['', 'f', 'f', '5', '6', '7', '8']]
+    >>> good_df
+        id   name    age
+    0   1    Joe     38
+    1   2    James   31
+    2   3    Jordon  2
+    3   2    Jasper  31
+    4   1    Jill    38
+    """  
+    bad_lines: list[list[str]] = []
+    kwargs.update({"on_bad_lines": bad_lines.append, "engine": "python"})
+    df: pd.DataFrame = pd.read_csv(path, **kwargs)
+    return ReadCsvResult(bad_lines, df)
+
+
 def read_csv(
     path: str,
     *,
@@ -98,9 +138,5 @@ def read_csv(
     """
     if chunksize is not None:
         return read_csv_chunks(path, chunksize, **kwargs)
-        
-    bad_lines: list[list[str]] = []
-    kwargs.update({"on_bad_lines": bad_lines.append, "engine": "python"})
     
-    df = pd.read_csv(path, **kwargs)
-    return ReadCsvResult(bad_lines, df)
+    return read_csv_all(path, **kwargs)

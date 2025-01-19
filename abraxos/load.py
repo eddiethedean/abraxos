@@ -3,15 +3,16 @@ import collections.abc as a
 
 import pandas as pd
 import sqlalchemy as sa
+import numpy as np
 
-from . import split
-from . import fill
+from abraxos import split
+from abraxos import fill
 
 
 class ToSqlResult(t.NamedTuple):
     errors: list
-    errored_dfs: pd.DataFrame
-    success_dfs: pd.DataFrame
+    errored_df: pd.DataFrame
+    success_df: pd.DataFrame
  
 
 def to_sql(
@@ -19,13 +20,13 @@ def to_sql(
     name: str,
     con: sa.engine.Connection | sa.engine.Engine,
     *,
-    if_exists='append',
-    index=False,
+    if_exists: t.Literal['fail', 'replace', 'append'] = 'append',
+    index: bool = False,
     **kwargs
 ) -> ToSqlResult:
-    errors: list = [Exception]
-    errored_dfs = [df[0:0], ]
-    success_dfs = [df[0:0], ]
+    errors: list[Exception] = []
+    errored_dfs: list[pd.DataFrame] = [df[0:0], ]
+    success_dfs: list[pd.DataFrame] = [df[0:0], ]
     try:
         df.to_sql(name, con, if_exists=if_exists, index=index, method='multi', **kwargs)
         return ToSqlResult([], df[0:0], df)
@@ -48,7 +49,8 @@ def to_sql(
 
 
 def to_records(df: pd.DataFrame) -> list[dict]:
-    return [fill.fill_nans(record, None) for record in df.to_dict('records')]
+    df = df.fillna(np.nan).replace([np.nan], [None])
+    return df.to_dict('records')
 
 
 def insert_df(
@@ -56,7 +58,7 @@ def insert_df(
     connection: sa.engine.Connection,
     sql_query: sa.Insert
 ) -> ToSqlResult:
-    records = to_records(df)
+    records: list[dict] = to_records(df)
     connection.execute(sql_query, records)
     return ToSqlResult([], df[0:0], df)
 
@@ -69,7 +71,7 @@ def use_sql(
     """
     User user provided SQL Insert to inser DataFrame records.
     """
-    errors: list = [Exception]
+    errors: list[Exception] = []
     errored_dfs: list[pd.DataFrame] = [df[0:0], ]
     success_dfs: list[pd.DataFrame] = [df[0:0], ]
     try:

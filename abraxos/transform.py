@@ -3,7 +3,7 @@ import typing as t
 
 import pandas as pd
 
-from . import split
+from abraxos import split
  
 
 class TransformResult(t.NamedTuple):
@@ -16,9 +16,9 @@ def transform(
     df: pd.DataFrame,
     transformer: a.Callable[[pd.DataFrame], pd.DataFrame]
 ) -> TransformResult:
-    errors = []
-    errored_dfs = []
-    success_dfs = []
+    errors: list[Exception] = []
+    errored_dfs: list[pd.DataFrame] = []
+    success_dfs: list[pd.DataFrame] = []
     try:
         return TransformResult([], df[0:0], transformer(df))
     except Exception as e:
@@ -35,6 +35,6 @@ def transform(
             except Exception as e:
                 return TransformResult([e], df, df[0:0])
             
-    errored_df = pd.concat(errored_dfs)
-    success_df = pd.concat(success_dfs)
+    errored_df: pd.DataFrame = pd.concat(errored_dfs)
+    success_df: pd.DataFrame = pd.concat(success_dfs)
     return TransformResult(errors, errored_df, success_df)
