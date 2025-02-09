@@ -1,12 +1,38 @@
+from __future__ import annotations
+
 import typing as t
-import collections.abc as a
+import abc
 
 import pandas as pd
-import sqlalchemy as sa
 import numpy as np
 
 from abraxos import split
-from abraxos import fill
+
+
+class SqlInsert(t.Protocol):
+    """Protocol for sqlalchemy.Insert object"""
+    ...
+
+
+class Connectable(t.Protocol):
+    def connect(self) -> SqlConnection:
+        raise NotImplementedError
+
+
+class SqlConnection(Connectable):
+    """Protocol for sqlalchemy.Connection object"""
+    @abc.abstractmethod
+    def execute(
+        self,
+        insert: SqlInsert,
+        records: t.Iterable[dict]
+    ):
+        raise NotImplementedError
+    
+    
+class SqlEngine(Connectable):
+    """Protoocol for sqlalchemy.Engine object"""
+    ...
 
 
 class ToSqlResult(t.NamedTuple):
@@ -18,7 +44,7 @@ class ToSqlResult(t.NamedTuple):
 def to_sql(
     df: pd.DataFrame,
     name: str,
-    con: sa.engine.Connection | sa.engine.Engine,
+    con: SqlConnection | SqlEngine,
     *,
     if_exists: t.Literal['fail', 'replace', 'append'] = 'append',
     index: bool = False,
@@ -55,8 +81,8 @@ def to_records(df: pd.DataFrame) -> list[dict]:
 
 def insert_df(
     df: pd.DataFrame,
-    connection: sa.engine.Connection,
-    sql_query: sa.Insert
+    connection: SqlConnection,
+    sql_query: SqlInsert
 ) -> ToSqlResult:
     records: list[dict] = to_records(df)
     connection.execute(sql_query, records)
@@ -65,8 +91,8 @@ def insert_df(
 
 def use_sql(
     df: pd.DataFrame,
-    connection: sa.engine.Connection,
-    sql_query: sa.Insert
+    connection: SqlConnection,
+    sql_query: SqlInsert
 ) -> ToSqlResult:
     """
     User user provided SQL Insert to inser DataFrame records.
