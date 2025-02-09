@@ -1,20 +1,30 @@
 import typing as t
+import abc
 
 import pandas as pd
-import pydantic
+
+
+class PydanticModel(t.Protocol):
+    @abc.abstractmethod
+    def model_validate(self, record: dict) -> t.Self:
+        raise NotImplementedError
+    
+    @abc.abstractmethod
+    def model_dump(self) -> dict:
+        raise NotImplementedError
 
 
 class ValidateResult(t.NamedTuple):
-    errors: list[pydantic.ValidationError]
+    errors: list[Exception]
     errored_df: pd.DataFrame
     success_df: pd.DataFrame
 
 
 def validate(
     df: pd.DataFrame,
-    model: pydantic.BaseModel
+    model: PydanticModel
 ) -> ValidateResult:
-    errors: list[pydantic.ValidationError] = []
+    errors: list[Exception] = []
     errored_df = df.astype('object')
     valid_df = df.astype('object')
 
@@ -22,7 +32,7 @@ def validate(
         record = row.to_dict()
         try:
             valid = model.model_validate(record)
-        except pydantic.ValidationError as e:
+        except Exception as e:
             errors.append(e)
             valid_df.drop(i, inplace=True)
         else:
