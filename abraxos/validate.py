@@ -27,7 +27,6 @@ def validate(
     errors: list[Exception] = []
     errored_df = df.astype('object')
     valid_df = df.astype('object')
-
     for i, row in df.iterrows():
         record = row.to_dict()
         try:
