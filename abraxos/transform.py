@@ -73,6 +73,6 @@ def transform(
     
     return TransformResult(
         errors,
-        pd.concat(errored_dfs, ignore_index=True),
-        pd.concat(success_dfs, ignore_index=True)
+        pd.concat(errored_dfs),
+        pd.concat(success_dfs)
     )

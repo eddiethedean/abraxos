@@ -3,6 +3,8 @@ import abc
 
 import pandas as pd
 
+from abraxos import utils
+
 
 class PydanticModel(t.Protocol):
     @abc.abstractmethod
@@ -63,14 +65,14 @@ def validate(
     errored_records: list[pd.Series] = []
     valid_records: list[pd.Series] = []
     
-    for _, row in df.iterrows():
-        record: dict[str, t.Any] = row.to_dict()
+    records: list[dict] = utils.to_records(df)
+    for index, record in zip(df.index, records):
         try:
             valid: PydanticModel = model.model_validate(record)
-            valid_records.append(pd.Series(valid.model_dump(), index=df.columns))
+            valid_records.append(pd.Series(valid.model_dump(), name=index))
         except Exception as e:
             errors.append(e)
-            errored_records.append(row)
+            errored_records.append(pd.Series(record, name=index))
 
     return ValidateResult(
         errors,

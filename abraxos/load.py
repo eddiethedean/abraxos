@@ -77,17 +77,12 @@ def to_sql(
     return ToSqlResult(errors, pd.concat(errored_dfs), pd.concat(success_dfs))
 
 
-def to_records(df: pd.DataFrame) -> list[dict]:
-    df = df.fillna(np.nan).replace([np.nan], [None])
-    return df.to_dict('records')
-
-
 def insert_df(
     df: pd.DataFrame,
     connection: SqlConnection,
     sql_query: SqlInsert
 ) -> ToSqlResult:
-    records: list[dict] = to_records(df)
+    records: list[dict] = utils.to_records(df)
     connection.execute(sql_query, records)
     return ToSqlResult([], utils.clear(df), df)
 
@@ -121,6 +116,6 @@ def use_sql(
 
     return ToSqlResult(
         errors,
-        pd.concat(errored_dfs, ignore_index=True),
-        pd.concat(success_dfs, ignore_index=True)
+        pd.concat(errored_dfs),
+        pd.concat(success_dfs)
     )

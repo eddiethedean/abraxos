@@ -49,3 +49,8 @@ def clear(df: pd.DataFrame) -> pd.DataFrame:
     Clear all rows from DataFrame.
     """
     return df.iloc[:0]
+
+
+def to_records(df: pd.DataFrame) -> list[dict]:
+    df = df.fillna(np.nan).replace([np.nan], [None])
+    return df.to_dict('records')
