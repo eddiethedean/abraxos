@@ -6,7 +6,7 @@ import abc
 import pandas as pd
 import numpy as np
 
-from abraxos import split
+from abraxos import utils
 
 
 class SqlInsert(t.Protocol):
@@ -14,12 +14,7 @@ class SqlInsert(t.Protocol):
     ...
 
 
-class Connectable(t.Protocol):
-    def connect(self) -> SqlConnection:
-        raise NotImplementedError
-
-
-class SqlConnection(Connectable):
+class SqlConnection(t.Protocol):
     """Protocol for sqlalchemy.Connection object"""
     @abc.abstractmethod
     def execute(
@@ -30,9 +25,11 @@ class SqlConnection(Connectable):
         raise NotImplementedError
     
     
-class SqlEngine(Connectable):
+class SqlEngine(t.Protocol):
     """Protoocol for sqlalchemy.Engine object"""
-    ...
+    @abc.abstractmethod
+    def connect(self) -> SqlConnection:
+        raise NotImplementedError
 
 
 class ToSqlResult(t.NamedTuple):
@@ -48,28 +45,34 @@ def to_sql(
     *,
     if_exists: t.Literal['fail', 'replace', 'append'] = 'append',
     index: bool = False,
+    chunks: int = 2,
     **kwargs
 ) -> ToSqlResult:
     errors: list[Exception] = []
-    errored_dfs: list[pd.DataFrame] = [df[0:0], ]
-    success_dfs: list[pd.DataFrame] = [df[0:0], ]
+    errored_dfs: list[pd.DataFrame] = [utils.clear(df), ]
+    success_dfs: list[pd.DataFrame] = [utils.clear(df), ]
     try:
         df.to_sql(name, con, if_exists=if_exists, index=index, method='multi', **kwargs)
-        return ToSqlResult([], df[0:0], df)
+        return ToSqlResult([], utils.clear(df), df)
     except Exception as e:
         if len(df) > 1:
-            df1, df2 = split.split_df(df)
-            errors1, errored_df1, success_df1 = to_sql(df1, name, con, if_exists=if_exists, index=index, **kwargs)
-            errors2, errored_df2, success_df2 = to_sql(df2, name, con, if_exists=if_exists, index=index, **kwargs)
-            errors.extend(errors1 + errors2)
-            errored_dfs.extend([errored_df1, errored_df2])
-            success_dfs.extend([success_df1, success_df2])
+            for df_chunk in utils.split(df, chunks):
+                result: ToSqlResult = to_sql(
+                    df_chunk,
+                    name, con,
+                    if_exists=if_exists,
+                    index=index,
+                    **kwargs
+                )
+                errors.extend(result.errors)
+                errored_dfs.append(result.errored_df)
+                success_dfs.append(result.success_df)
         else:
             try:
                 df.to_sql(name, con, if_exists=if_exists, index=index, method='multi', **kwargs)
-                return ToSqlResult([], df[0:0], df)
+                return ToSqlResult([], utils.clear(df), df)
             except Exception as e:
-                return ToSqlResult([e], df, df[0:0])
+                return ToSqlResult([e], df, utils.clear(df))
 
     return ToSqlResult(errors, pd.concat(errored_dfs), pd.concat(success_dfs))
 
@@ -86,34 +89,38 @@ def insert_df(
 ) -> ToSqlResult:
     records: list[dict] = to_records(df)
     connection.execute(sql_query, records)
-    return ToSqlResult([], df[0:0], df)
+    return ToSqlResult([], utils.clear(df), df)
 
 
 def use_sql(
     df: pd.DataFrame,
     connection: SqlConnection,
-    sql_query: SqlInsert
+    sql_query: SqlInsert,
+    chunks: int = 2
 ) -> ToSqlResult:
     """
-    User user provided SQL Insert to inser DataFrame records.
+    User provided SQL Insert to inser DataFrame records.
     """
     errors: list[Exception] = []
-    errored_dfs: list[pd.DataFrame] = [df[0:0], ]
-    success_dfs: list[pd.DataFrame] = [df[0:0], ]
+    errored_dfs: list[pd.DataFrame] = [utils.clear(df), ]
+    success_dfs: list[pd.DataFrame] = [utils.clear(df), ]
     try:
         return insert_df(df, connection, sql_query)
     except Exception as e:
         if len(df) > 1:
-            df1, df2 = split.split_df(df)
-            errors1, errored_df1, success_df1 = use_sql(df1, connection, sql_query)
-            errors2, errored_df2, success_df2 = use_sql(df2, connection, sql_query)
-            errors.extend(errors1 + errors2)
-            errored_dfs.extend([errored_df1, errored_df2])
-            success_dfs.extend([success_df1, success_df2])
+            for df_chunk in utils.split(df, chunks):
+                result: ToSqlResult = use_sql(df_chunk, connection, sql_query)
+                errors.extend(result.errors)
+                errored_dfs.append(result.errored_df)
+                success_dfs.append(result.success_df)
         else:
             try:
                 return insert_df(df, connection, sql_query)
             except Exception as e:
-                return ToSqlResult([e], df, df[0:0])
+                return ToSqlResult([e], df, utils.clear(df))
 
-    return ToSqlResult(errors, pd.concat(errored_dfs), pd.concat(success_dfs))
+    return ToSqlResult(
+        errors,
+        pd.concat(errored_dfs, ignore_index=True),
+        pd.concat(success_dfs, ignore_index=True)
+    )
