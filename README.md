@@ -1,6 +1,6 @@
 # abraxos
 
-**abraxos** is a Python package for efficient data transformation, validation, and database interaction. It provides utilities to handle CSV processing, SQL insertions, DataFrame transformations, and Pydantic-based validation with error tracking.
+**abraxos** is a Python package for reliable data transformation, validation, and database interaction. It provides utilities to handle CSV processing, SQL insertions, DataFrame transformations, and Pydantic-based validation with error tracking.
 
 ## Features
 - **CSV Processing**: Read CSV files with error handling and chunking support.
