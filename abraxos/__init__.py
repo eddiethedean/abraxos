@@ -1,4 +1,4 @@
-__version__ = '0.0.5'
+__version__ = '0.0.6'
 
 from .extract import read_csv, read_csv_chunks
 from .transform import transform
