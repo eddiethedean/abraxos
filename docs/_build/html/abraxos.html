@@ -3,7 +3,7 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="prev" title="abraxos documentation" href="index.html" />
+<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" />
 
     <!-- Generated with Sphinx 7.4.7 and Furo 2024.08.06 -->
         <title>abraxos package - abraxos 0.0.6 documentation</title>
@@ -198,9 +198,26 @@
   <input type="hidden" name="area" value="default">
 </form>
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
-  <p class="caption" role="heading"><span class="caption-text">API</span></p>
-<ul class="current">
-<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">abraxos package</a></li>
+  <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="api.html">API Reference</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of API Reference</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/abraxos.extract.read_csv.html">abraxos.extract.read_csv</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/abraxos.extract.read_csv_chunks.html">abraxos.extract.read_csv_chunks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/abraxos.transform.transform.html">abraxos.transform.transform</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/abraxos.load.to_sql.html">abraxos.load.to_sql</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/abraxos.load.use_sql.html">abraxos.load.use_sql</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/abraxos.validate.validate.html">abraxos.validate.validate</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/abraxos.utils.split.html">abraxos.utils.split</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/abraxos.utils.clear.html">abraxos.utils.clear</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="tutorials/index.html">Tutorials</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Tutorials</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/reading_csv.html">Reading CSV files with abraxos</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/transforming_data.html">Transforming DataFrames with abraxos</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/writing_sql.html">Writing DataFrames to SQL databases</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/validating_data.html">Validating Data with Pydantic Models</a></li>
+</ul>
+</li>
 </ul>
 
 </div>
@@ -250,7 +267,7 @@
 <span id="abraxos-extract-module"></span><h2>abraxos.extract module<a class="headerlink" href="#module-abraxos.extract" title="Link to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="abraxos.extract.ReadCsvResult">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">abraxos.extract.</span></span><span class="sig-name descname"><span class="pre">ReadCsvResult</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bad_lines</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataframe</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#abraxos.extract.ReadCsvResult" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">abraxos.extract.</span></span><span class="sig-name descname"><span class="pre">ReadCsvResult</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bad_lines</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataframe</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/abraxos/extract.html#ReadCsvResult"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abraxos.extract.ReadCsvResult" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">NamedTuple</span></code></p>
 <p>A named tuple representing the result of reading a CSV file.</p>
 <dl class="py attribute">
@@ -304,7 +321,7 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="abraxos.extract.read_csv">
-<span class="sig-prename descclassname"><span class="pre">abraxos.extract.</span></span><span class="sig-name descname"><span class="pre">read_csv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunksize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#abraxos.extract.read_csv" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">abraxos.extract.</span></span><span class="sig-name descname"><span class="pre">read_csv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunksize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/abraxos/extract.html#read_csv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abraxos.extract.read_csv" title="Link to this definition">¶</a></dt>
 <dd><p>Reads a CSV file and optionally processes it in chunks, capturing malformed lines.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -338,7 +355,7 @@ Otherwise, returns a generator yielding ReadCsvResult for each chunk.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="abraxos.extract.read_csv_all">
-<span class="sig-prename descclassname"><span class="pre">abraxos.extract.</span></span><span class="sig-name descname"><span class="pre">read_csv_all</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#abraxos.extract.read_csv_all" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">abraxos.extract.</span></span><span class="sig-name descname"><span class="pre">read_csv_all</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/abraxos/extract.html#read_csv_all"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abraxos.extract.read_csv_all" title="Link to this definition">¶</a></dt>
 <dd><p>Reads an entire CSV file and captures malformed lines.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -364,7 +381,7 @@ Otherwise, returns a generator yielding ReadCsvResult for each chunk.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="abraxos.extract.read_csv_chunks">
-<span class="sig-prename descclassname"><span class="pre">abraxos.extract.</span></span><span class="sig-name descname"><span class="pre">read_csv_chunks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunksize</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#abraxos.extract.read_csv_chunks" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">abraxos.extract.</span></span><span class="sig-name descname"><span class="pre">read_csv_chunks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunksize</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/abraxos/extract.html#read_csv_chunks"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abraxos.extract.read_csv_chunks" title="Link to this definition">¶</a></dt>
 <dd><p>Reads a CSV file in chunks and captures malformed lines.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -394,12 +411,12 @@ Otherwise, returns a generator yielding ReadCsvResult for each chunk.</p>
 <span id="abraxos-load-module"></span><h2>abraxos.load module<a class="headerlink" href="#module-abraxos.load" title="Link to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="abraxos.load.SqlConnection">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">abraxos.load.</span></span><span class="sig-name descname"><span class="pre">SqlConnection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#abraxos.load.SqlConnection" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">abraxos.load.</span></span><span class="sig-name descname"><span class="pre">SqlConnection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/abraxos/load.html#SqlConnection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abraxos.load.SqlConnection" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Protocol</span></code></p>
 <p>Protocol for a database connection that supports executing insert statements.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="abraxos.load.SqlConnection.execute">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">execute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">insert</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">records</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#abraxos.load.SqlConnection.execute" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">execute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">insert</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">records</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/abraxos/load.html#SqlConnection.execute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abraxos.load.SqlConnection.execute" title="Link to this definition">¶</a></dt>
 <dd><p>Execute an insert statement with given records.</p>
 </dd></dl>
 
@@ -407,12 +424,12 @@ Otherwise, returns a generator yielding ReadCsvResult for each chunk.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="abraxos.load.SqlEngine">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">abraxos.load.</span></span><span class="sig-name descname"><span class="pre">SqlEngine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#abraxos.load.SqlEngine" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">abraxos.load.</span></span><span class="sig-name descname"><span class="pre">SqlEngine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/abraxos/load.html#SqlEngine"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abraxos.load.SqlEngine" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Protocol</span></code></p>
 <p>Protocol for a database engine object that can provide connections.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="abraxos.load.SqlEngine.connect">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">connect</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#abraxos.load.SqlEngine.connect" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">connect</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/abraxos/load.html#SqlEngine.connect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abraxos.load.SqlEngine.connect" title="Link to this definition">¶</a></dt>
 <dd><p>Obtain a SQL connection from the engine.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
@@ -425,14 +442,14 @@ Otherwise, returns a generator yielding ReadCsvResult for each chunk.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="abraxos.load.SqlInsert">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">abraxos.load.</span></span><span class="sig-name descname"><span class="pre">SqlInsert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#abraxos.load.SqlInsert" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">abraxos.load.</span></span><span class="sig-name descname"><span class="pre">SqlInsert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/abraxos/load.html#SqlInsert"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abraxos.load.SqlInsert" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Protocol</span></code></p>
 <p>Protocol for a SQL insert statement object (e.g., sqlalchemy.Insert).</p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="abraxos.load.ToSqlResult">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">abraxos.load.</span></span><span class="sig-name descname"><span class="pre">ToSqlResult</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">errors</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Exception</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">errored_df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pd.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">success_df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pd.DataFrame</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#abraxos.load.ToSqlResult" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">abraxos.load.</span></span><span class="sig-name descname"><span class="pre">ToSqlResult</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">errors</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Exception</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">errored_df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pd.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">success_df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pd.DataFrame</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/abraxos/load.html#ToSqlResult"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abraxos.load.ToSqlResult" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">NamedTuple</span></code></p>
 <p>Result of inserting a DataFrame into a database.</p>
 <dl class="py attribute">
@@ -503,7 +520,7 @@ Otherwise, returns a generator yielding ReadCsvResult for each chunk.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="abraxos.load.insert_df">
-<span class="sig-prename descclassname"><span class="pre">abraxos.load.</span></span><span class="sig-name descname"><span class="pre">insert_df</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">connection</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sql_query</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#abraxos.load.insert_df" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">abraxos.load.</span></span><span class="sig-name descname"><span class="pre">insert_df</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">connection</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sql_query</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/abraxos/load.html#insert_df"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abraxos.load.insert_df" title="Link to this definition">¶</a></dt>
 <dd><p>Inserts a DataFrame into a database using a raw SQL insert statement.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -524,7 +541,7 @@ Otherwise, returns a generator yielding ReadCsvResult for each chunk.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="abraxos.load.to_sql">
-<span class="sig-prename descclassname"><span class="pre">abraxos.load.</span></span><span class="sig-name descname"><span class="pre">to_sql</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">con</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">if_exists</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'append'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#abraxos.load.to_sql" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">abraxos.load.</span></span><span class="sig-name descname"><span class="pre">to_sql</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">con</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">if_exists</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'append'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/abraxos/load.html#to_sql"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abraxos.load.to_sql" title="Link to this definition">¶</a></dt>
 <dd><p>Writes a DataFrame to a SQL database table with error handling.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -549,7 +566,7 @@ Otherwise, returns a generator yielding ReadCsvResult for each chunk.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="abraxos.load.use_sql">
-<span class="sig-prename descclassname"><span class="pre">abraxos.load.</span></span><span class="sig-name descname"><span class="pre">use_sql</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">connection</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sql_query</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#abraxos.load.use_sql" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">abraxos.load.</span></span><span class="sig-name descname"><span class="pre">use_sql</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">connection</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sql_query</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/abraxos/load.html#use_sql"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abraxos.load.use_sql" title="Link to this definition">¶</a></dt>
 <dd><p>Executes user-provided SQL insert using <cite>insert_df</cite> with error handling.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -574,7 +591,7 @@ Otherwise, returns a generator yielding ReadCsvResult for each chunk.</p>
 <span id="abraxos-transform-module"></span><h2>abraxos.transform module<a class="headerlink" href="#module-abraxos.transform" title="Link to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="abraxos.transform.TransformResult">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">abraxos.transform.</span></span><span class="sig-name descname"><span class="pre">TransformResult</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">errors</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Exception</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">errored_df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">success_df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#abraxos.transform.TransformResult" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">abraxos.transform.</span></span><span class="sig-name descname"><span class="pre">TransformResult</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">errors</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Exception</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">errored_df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">success_df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/abraxos/transform.html#TransformResult"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abraxos.transform.TransformResult" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">NamedTuple</span></code></p>
 <p>Result of applying a transformation to a DataFrame.</p>
 <dl class="py attribute">
@@ -645,7 +662,7 @@ Otherwise, returns a generator yielding ReadCsvResult for each chunk.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="abraxos.transform.transform">
-<span class="sig-prename descclassname"><span class="pre">abraxos.transform.</span></span><span class="sig-name descname"><span class="pre">transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transformer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#abraxos.transform.transform" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">abraxos.transform.</span></span><span class="sig-name descname"><span class="pre">transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transformer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/abraxos/transform.html#transform"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abraxos.transform.transform" title="Link to this definition">¶</a></dt>
 <dd><p>Applies a transformation function to a DataFrame with error isolation.</p>
 <p>If the transformation raises an exception on a chunk, the DataFrame
 is split into smaller chunks recursively to isolate errors. Ultimately,
@@ -689,7 +706,7 @@ rows that fail even as single-row DataFrames are collected separately.</p>
 <span id="abraxos-utils-module"></span><h2>abraxos.utils module<a class="headerlink" href="#module-abraxos.utils" title="Link to this heading">¶</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="abraxos.utils.clear">
-<span class="sig-prename descclassname"><span class="pre">abraxos.utils.</span></span><span class="sig-name descname"><span class="pre">clear</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#abraxos.utils.clear" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">abraxos.utils.</span></span><span class="sig-name descname"><span class="pre">clear</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/abraxos/utils.html#clear"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abraxos.utils.clear" title="Link to this definition">¶</a></dt>
 <dd><p>Returns an empty DataFrame with the same schema (columns and dtypes) as the input.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -714,7 +731,7 @@ rows that fail even as single-row DataFrames are collected separately.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="abraxos.utils.split">
-<span class="sig-prename descclassname"><span class="pre">abraxos.utils.</span></span><span class="sig-name descname"><span class="pre">split</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">i</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#abraxos.utils.split" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">abraxos.utils.</span></span><span class="sig-name descname"><span class="pre">split</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">i</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/abraxos/utils.html#split"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abraxos.utils.split" title="Link to this definition">¶</a></dt>
 <dd><p>Splits a DataFrame into <cite>i</cite> approximately equal parts.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -754,7 +771,7 @@ rows that fail even as single-row DataFrames are collected separately.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="abraxos.utils.to_records">
-<span class="sig-prename descclassname"><span class="pre">abraxos.utils.</span></span><span class="sig-name descname"><span class="pre">to_records</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#abraxos.utils.to_records" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">abraxos.utils.</span></span><span class="sig-name descname"><span class="pre">to_records</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/abraxos/utils.html#to_records"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abraxos.utils.to_records" title="Link to this definition">¶</a></dt>
 <dd><p>Converts a DataFrame to a list of record dictionaries, replacing NaN with None.</p>
 <p>This is useful for inserting into databases that expect <cite>None</cite> for nulls.</p>
 <dl class="field-list simple">
@@ -781,12 +798,12 @@ rows that fail even as single-row DataFrames are collected separately.</p>
 <span id="abraxos-validate-module"></span><h2>abraxos.validate module<a class="headerlink" href="#module-abraxos.validate" title="Link to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="abraxos.validate.PydanticModel">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">abraxos.validate.</span></span><span class="sig-name descname"><span class="pre">PydanticModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#abraxos.validate.PydanticModel" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">abraxos.validate.</span></span><span class="sig-name descname"><span class="pre">PydanticModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/abraxos/validate.html#PydanticModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abraxos.validate.PydanticModel" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Protocol</span></code></p>
 <p>Protocol representing a Pydantic-like model for validation and serialization.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="abraxos.validate.PydanticModel.model_dump">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">model_dump</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#abraxos.validate.PydanticModel.model_dump" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">model_dump</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/abraxos/validate.html#PydanticModel.model_dump"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abraxos.validate.PydanticModel.model_dump" title="Link to this definition">¶</a></dt>
 <dd><p>Serializes the model into a dictionary.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
@@ -797,7 +814,7 @@ rows that fail even as single-row DataFrames are collected separately.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="abraxos.validate.PydanticModel.model_validate">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">model_validate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#abraxos.validate.PydanticModel.model_validate" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">model_validate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/abraxos/validate.html#PydanticModel.model_validate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abraxos.validate.PydanticModel.model_validate" title="Link to this definition">¶</a></dt>
 <dd><p>Validates a dictionary record and returns a validated model instance.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
@@ -810,7 +827,7 @@ rows that fail even as single-row DataFrames are collected separately.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="abraxos.validate.ValidateResult">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">abraxos.validate.</span></span><span class="sig-name descname"><span class="pre">ValidateResult</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">errors</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Exception</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">errored_df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">success_df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#abraxos.validate.ValidateResult" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">abraxos.validate.</span></span><span class="sig-name descname"><span class="pre">ValidateResult</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">errors</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Exception</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">errored_df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">success_df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/abraxos/validate.html#ValidateResult"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abraxos.validate.ValidateResult" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">NamedTuple</span></code></p>
 <p>Result of validating a DataFrame using a Pydantic-like model.</p>
 <dl class="py attribute">
@@ -881,7 +898,7 @@ rows that fail even as single-row DataFrames are collected separately.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="abraxos.validate.validate">
-<span class="sig-prename descclassname"><span class="pre">abraxos.validate.</span></span><span class="sig-name descname"><span class="pre">validate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#abraxos.validate.validate" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">abraxos.validate.</span></span><span class="sig-name descname"><span class="pre">validate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/abraxos/validate.html#validate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#abraxos.validate.validate" title="Link to this definition">¶</a></dt>
 <dd><p>Validates each row in a DataFrame using a Pydantic-like model.</p>
 <p>Each record is passed to the model’s <cite>model_validate</cite> method.
 Successfully validated models are converted back into rows using <cite>model_dump</cite>.</p>
@@ -937,17 +954,7 @@ Successfully validated models are converted back into rows using <cite>model_dum
         
         <div class="related-pages">
           
-          <a class="prev-page" href="index.html">
-              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
-              <div class="page-info">
-                <div class="context">
-                  <span>Previous</span>
-                </div>
-                
-                <div class="title">Home</div>
-                
-              </div>
-            </a>
+          
         </div>
         <div class="bottom-of-page">
           <div class="left-details">
