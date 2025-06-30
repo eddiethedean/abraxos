@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "abraxos"
-version = "0.0.6"
+version = "0.0.7"
 description = "Upgrade you Pandas ETL process."
 readme = "README.md"
 requires-python = ">=3.8"
