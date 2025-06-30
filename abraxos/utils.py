@@ -1,11 +1,12 @@
 import pandas as pd
 import numpy as np
+from typing import List, Tuple
 
 
 def split(
     df: pd.DataFrame,
     i: int = 2
-) -> tuple[pd.DataFrame, ...]:
+) -> Tuple[pd.DataFrame, ...]:
     """
     Splits a DataFrame into `i` approximately equal parts.
 
@@ -20,7 +21,7 @@ def split(
     -------
     tuple of pd.DataFrame
         A tuple containing `i` DataFrames, each being a partition of the original DataFrame.
-    
+
     Examples
     --------
     >>> import pandas as pd
@@ -32,11 +33,11 @@ def split(
     1  1
     2  2
     3  3,
-     A
+       A
     4  4
     5  5
     6  6,
-     A
+       A
     7  7
     8  8
     9  9)
@@ -46,11 +47,50 @@ def split(
 
 def clear(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Clear all rows from DataFrame.
+    Returns an empty DataFrame with the same schema (columns and dtypes) as the input.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        The input DataFrame.
+
+    Returns
+    -------
+    pd.DataFrame
+        An empty DataFrame with the same structure as `df`.
+
+    Examples
+    --------
+    >>> df = pd.DataFrame({'x': [1, 2, 3]})
+    >>> clear(df)
+    Empty DataFrame
+    Columns: [x]
+    Index: []
     """
     return df.iloc[:0]
 
 
-def to_records(df: pd.DataFrame) -> list[dict]:
-    df = df.fillna(np.nan).replace([np.nan], [None])
+def to_records(df: pd.DataFrame) -> List[dict]:
+    """
+    Converts a DataFrame to a list of record dictionaries, replacing NaN with None.
+
+    This is useful for inserting into databases that expect `None` for nulls.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        The DataFrame to convert.
+
+    Returns
+    -------
+    list of dict
+        A list of records (dicts), where each dict is a row in the DataFrame.
+
+    Examples
+    --------
+    >>> df = pd.DataFrame({'a': [1, None], 'b': ['x', 'y']})
+    >>> to_records(df)
+    [{'a': 1.0, 'b': 'x'}, {'a': None, 'b': 'y'}]
+    """
+    df = df.fillna(np.nan).replace(np.nan, None)
     return df.to_dict('records')
