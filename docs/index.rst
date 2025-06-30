@@ -13,8 +13,9 @@ documentation for details.
 
 .. toctree::
    :maxdepth: 2
-   :caption: API
+   :caption: Contents:
 
-   abraxos
-
+   api
+   tutorials/usage
+   tutorials/validation
 
