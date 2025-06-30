@@ -1,4 +1,7 @@
 # Abraxos
+[![PyPI version](https://img.shields.io/pypi/v/abraxos.svg?style=flat)](https://pypi.org/project/abraxos/)
+[![Documentation Status](https://readthedocs.org/projects/abraxos/badge/?version=latest)](https://abraxos.readthedocs.io/en/latest/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat)](LICENSE)
 
 **Abraxos** is a lightweight Python toolkit for robust, row-aware data processing using Pandas and Pydantic. It helps you:
 
@@ -36,6 +39,13 @@ Abraxo requires Python 3.8+ and depends on:
     - numpy
     - optionally sqlalchemy for SQL I/O
     - your own pydantic models for validation
+
+---
+
+## Documentation
+
+Full documentation is available at:  
+[https://abraxos.readthedocs.io](https://abraxos.readthedocs.io)
 
 ---
 

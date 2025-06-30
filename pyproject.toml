@@ -17,3 +17,8 @@ keywords = ["etl", "validation", "sql", "csv", "pandas"]
 
 [tool.setuptools.packages]
 find = {}
+
+[project.urls]
+Documentation = "https://abraxos.readthedocs.io"
+Source = "https://github.com/eddiethedean/abraxos"
+Tracker = "https://github.com/eddiethedean/abraxos/issues"
