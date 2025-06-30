@@ -1,7 +1,6 @@
 import pytest
 import pandas as pd
-from typing import List
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine
 
 from abraxos import (
     read_csv, read_csv_chunks,
