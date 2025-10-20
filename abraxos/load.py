@@ -1,13 +1,16 @@
+"""SQL loading utilities with error handling and retry logic."""
+
 from __future__ import annotations
 
-import abc
 import typing as t
-from typing import Union, List, Iterable, Literal
+from collections.abc import Iterable
+from typing import Literal
 
 import pandas as pd
-import numpy as np
 
 from abraxos import utils
+
+__all__ = ['SqlInsert', 'SqlConnection', 'SqlEngine', 'ToSqlResult', 'to_sql', 'use_sql']
 
 
 class SqlInsert(t.Protocol):
@@ -22,16 +25,15 @@ class SqlConnection(t.Protocol):
     Protocol for a database connection that supports executing insert statements.
     """
 
-    @abc.abstractmethod
     def execute(
         self,
         insert: SqlInsert,
         records: Iterable[dict]
-    ):
+    ) -> None:
         """
         Execute an insert statement with given records.
         """
-        raise NotImplementedError
+        ...
 
 
 class SqlEngine(t.Protocol):
@@ -39,12 +41,11 @@ class SqlEngine(t.Protocol):
     Protocol for a database engine object that can provide connections.
     """
 
-    @abc.abstractmethod
     def connect(self) -> SqlConnection:
         """
         Obtain a SQL connection from the engine.
         """
-        raise NotImplementedError
+        ...
 
 
 class ToSqlResult(t.NamedTuple):
@@ -60,7 +61,7 @@ class ToSqlResult(t.NamedTuple):
     success_df : pandas.DataFrame
         Rows that were successfully inserted.
     """
-    errors: List[Exception]
+    errors: list[Exception]
     errored_df: pd.DataFrame
     success_df: pd.DataFrame
 
@@ -68,12 +69,12 @@ class ToSqlResult(t.NamedTuple):
 def to_sql(
     df: pd.DataFrame,
     name: str,
-    con: Union[SqlConnection, SqlEngine],
+    con: SqlConnection | SqlEngine,
     *,
     if_exists: Literal['fail', 'replace', 'append'] = 'append',
     index: bool = False,
     chunks: int = 2,
-    **kwargs
+    **kwargs: t.Any
 ) -> ToSqlResult:
     """
     Writes a DataFrame to a SQL database table with error handling.
@@ -100,14 +101,14 @@ def to_sql(
     ToSqlResult
         A named tuple with lists of errors, failed rows, and successful rows.
     """
-    errors: List[Exception] = []
-    errored_dfs: List[pd.DataFrame] = [utils.clear(df)]
-    success_dfs: List[pd.DataFrame] = [utils.clear(df)]
+    errors: list[Exception] = []
+    errored_dfs: list[pd.DataFrame] = [utils.clear(df)]
+    success_dfs: list[pd.DataFrame] = [utils.clear(df)]
 
     try:
         df.to_sql(name, con, if_exists=if_exists, index=index, method='multi', **kwargs)
         return ToSqlResult([], utils.clear(df), df)
-    except Exception as e:
+    except Exception:
         if len(df) > 1:
             for df_chunk in utils.split(df, chunks):
                 result: ToSqlResult = to_sql(
@@ -115,6 +116,7 @@ def to_sql(
                     name, con,
                     if_exists=if_exists,
                     index=index,
+                    chunks=chunks,
                     **kwargs
                 )
                 errors.extend(result.errors)
@@ -152,7 +154,7 @@ def insert_df(
     ToSqlResult
         A result containing successful and errored inserts.
     """
-    records: List[dict] = utils.to_records(df)
+    records: list[dict] = utils.to_records(df)
     connection.execute(sql_query, records)
     return ToSqlResult([], utils.clear(df), df)
 
@@ -182,16 +184,16 @@ def use_sql(
     ToSqlResult
         A result indicating which rows succeeded and which failed.
     """
-    errors: List[Exception] = []
-    errored_dfs: List[pd.DataFrame] = [utils.clear(df)]
-    success_dfs: List[pd.DataFrame] = [utils.clear(df)]
+    errors: list[Exception] = []
+    errored_dfs: list[pd.DataFrame] = [utils.clear(df)]
+    success_dfs: list[pd.DataFrame] = [utils.clear(df)]
 
     try:
         return insert_df(df, connection, sql_query)
-    except Exception as e:
+    except Exception:
         if len(df) > 1:
             for df_chunk in utils.split(df, chunks):
-                result: ToSqlResult = use_sql(df_chunk, connection, sql_query)
+                result: ToSqlResult = use_sql(df_chunk, connection, sql_query, chunks)
                 errors.extend(result.errors)
                 errored_dfs.append(result.errored_df)
                 success_dfs.append(result.success_df)

@@ -1,10 +1,15 @@
+"""DataFrame transformation with error isolation."""
+
+from __future__ import annotations
+
 import collections.abc as a
 import typing as t
-from typing import List
 
 import pandas as pd
 
 from abraxos import utils
+
+__all__ = ['TransformResult', 'transform']
 
 
 class TransformResult(t.NamedTuple):
@@ -20,7 +25,7 @@ class TransformResult(t.NamedTuple):
     success_df : pandas.DataFrame
         Successfully transformed rows.
     """
-    errors: List[Exception]
+    errors: list[Exception]
     errored_df: pd.DataFrame
     success_df: pd.DataFrame
 
@@ -68,16 +73,16 @@ def transform(
     >>> result.errored_df.empty
     True
     """
-    errors: List[Exception] = []
-    errored_dfs: List[pd.DataFrame] = []
-    success_dfs: List[pd.DataFrame] = []
+    errors: list[Exception] = []
+    errored_dfs: list[pd.DataFrame] = []
+    success_dfs: list[pd.DataFrame] = []
 
     try:
         return TransformResult([], utils.clear(df), transformer(df))
-    except Exception as e:
+    except Exception:
         if len(df) > 1:
             for df_c in utils.split(df, chunks):
-                result: TransformResult = transform(df_c, transformer)
+                result: TransformResult = transform(df_c, transformer, chunks)
                 errors.extend(result.errors)
                 errored_dfs.append(result.errored_df)
                 success_dfs.append(result.success_df)

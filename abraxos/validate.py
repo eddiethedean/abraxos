@@ -1,9 +1,14 @@
+"""Pydantic model validation for DataFrame rows."""
+
+from __future__ import annotations
+
 import typing as t
-import abc
 
 import pandas as pd
 
 from abraxos import utils
+
+__all__ = ['PydanticModel', 'ValidateResult', 'validate']
 
 
 class PydanticModel(t.Protocol):
@@ -11,19 +16,17 @@ class PydanticModel(t.Protocol):
     Protocol representing a Pydantic-like model for validation and serialization.
     """
 
-    @abc.abstractmethod
-    def model_validate(self, record: dict) -> 'PydanticModel':
+    def model_validate(self, record: dict[t.Any, t.Any]) -> PydanticModel:
         """
         Validates a dictionary record and returns a validated model instance.
         """
-        raise NotImplementedError
+        ...
 
-    @abc.abstractmethod
     def model_dump(self) -> dict:
         """
         Serializes the model into a dictionary.
         """
-        raise NotImplementedError
+        ...
 
 
 class ValidateResult(t.NamedTuple):
@@ -39,14 +42,14 @@ class ValidateResult(t.NamedTuple):
     success_df : pd.DataFrame
         DataFrame of successfully validated and serialized rows.
     """
-    errors: t.List[Exception]
+    errors: list[Exception]
     errored_df: pd.DataFrame
     success_df: pd.DataFrame
 
 
 def validate(
     df: pd.DataFrame,
-    model: PydanticModel
+    model: type[PydanticModel] | PydanticModel
 ) -> ValidateResult:
     """
     Validates each row in a DataFrame using a Pydantic-like model.
@@ -58,8 +61,8 @@ def validate(
     ----------
     df : pd.DataFrame
         The DataFrame containing records to be validated.
-    model : PydanticModel
-        A Pydantic-style model instance with `model_validate` and `model_dump` methods.
+    model : type[PydanticModel] or PydanticModel
+        A Pydantic-style model class or instance with `model_validate` and `model_dump` methods.
 
     Returns
     -------
@@ -72,40 +75,36 @@ def validate(
     Examples
     --------
     >>> import pandas as pd
-    >>> class SampleModel:
-    ...     def model_validate(self, record: dict):
-    ...         if isinstance(record.get("value"), int):
-    ...             self._val = record["value"] * 2
-    ...             return self
-    ...         raise ValueError("Invalid value")
-    ...     def model_dump(self):
-    ...         return {"value": self._val}
-    >>> df = pd.DataFrame({'value': [1, 'a', 3]})
-    >>> validate(df, SampleModel())
-    ValidateResult(
-        errors=[ValueError('Invalid value')],
-        errored_df=   value
-    1     a,
-        success_df=   value
-    0      2
-    2      6)
+    >>> from pydantic import BaseModel
+    >>> class Person(BaseModel):
+    ...     name: str
+    ...     age: int
+    >>> df = pd.DataFrame({'name': ['Alice', 'Bob'], 'age': [30, 'invalid']})
+    >>> result = validate(df, Person)
+    >>> len(result.success_df)
+    1
+    >>> len(result.errored_df)
+    1
     """
-    errors: t.List[Exception] = []
-    errored_records: t.List[pd.Series] = []
-    valid_records: t.List[pd.Series] = []
+    errors: list[Exception] = []
+    errored_records: list[pd.Series] = []
+    valid_records: list[pd.Series] = []
 
-    records: t.List[dict] = utils.to_records(df)
+    records: list[dict] = utils.to_records(df)
 
     for index, record in zip(df.index, records):
         try:
-            validated: PydanticModel = model.model_validate(record)
+            validated: PydanticModel = model.model_validate(record)  # type: ignore[call-arg, arg-type]
             valid_records.append(pd.Series(validated.model_dump(), name=index))
         except Exception as e:
             errors.append(e)
             errored_records.append(pd.Series(record, name=index))
 
-    return ValidateResult(
-        errors,
-        pd.DataFrame(errored_records, columns=df.columns),
-        pd.DataFrame(valid_records, columns=df.columns)
-    )
+    errored_df = pd.DataFrame(errored_records)
+    success_df = pd.DataFrame(valid_records)
+
+    # Ensure column order matches input DataFrame
+    errored_df = errored_df[df.columns] if not errored_df.empty else utils.clear(df)
+    success_df = success_df[df.columns] if not success_df.empty else utils.clear(df)
+
+    return ValidateResult(errors, errored_df, success_df)

@@ -1,12 +1,19 @@
-import pandas as pd
+"""Utility functions for DataFrame operations."""
+
+from __future__ import annotations
+
+import typing as t
+
 import numpy as np
-from typing import List, Tuple
+import pandas as pd
+
+__all__ = ['split', 'clear', 'to_records']
 
 
 def split(
     df: pd.DataFrame,
     i: int = 2
-) -> Tuple[pd.DataFrame, ...]:
+) -> tuple[pd.DataFrame, ...]:
     """
     Splits a DataFrame into `i` approximately equal parts.
 
@@ -70,7 +77,7 @@ def clear(df: pd.DataFrame) -> pd.DataFrame:
     return df.iloc[:0]
 
 
-def to_records(df: pd.DataFrame) -> List[dict]:
+def to_records(df: pd.DataFrame) -> list[dict[t.Any, t.Any]]:
     """
     Converts a DataFrame to a list of record dictionaries, replacing NaN with None.
 
@@ -93,4 +100,4 @@ def to_records(df: pd.DataFrame) -> List[dict]:
     [{'a': 1.0, 'b': 'x'}, {'a': None, 'b': 'y'}]
     """
     df = df.fillna(np.nan).replace(np.nan, None)
-    return df.to_dict('records')
+    return df.to_dict('records')  # type: ignore[no-any-return]

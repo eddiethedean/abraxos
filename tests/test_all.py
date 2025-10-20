@@ -1,16 +1,10 @@
-import pytest
+from io import StringIO
+
 import pandas as pd
+import pytest
 from sqlalchemy import create_engine
 
-from abraxos import (
-    read_csv, read_csv_chunks,
-    transform,
-    to_sql, use_sql,
-    validate,
-    split, clear
-)
-
-from io import StringIO
+from abraxos import clear, read_csv, read_csv_chunks, split, to_sql, transform, use_sql, validate
 
 
 # ---------------------

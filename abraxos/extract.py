@@ -1,8 +1,13 @@
+"""CSV reading utilities with bad line recovery."""
+
+from __future__ import annotations
+
 import collections.abc as a
 import typing as t
-from typing import Optional, Union
 
 import pandas as pd
+
+__all__ = ['ReadCsvResult', 'read_csv', 'read_csv_chunks']
 
 
 class ReadCsvResult(t.NamedTuple):
@@ -16,14 +21,14 @@ class ReadCsvResult(t.NamedTuple):
     dataframe : pandas.DataFrame
         Parsed portion of the CSV file.
     """
-    bad_lines: t.List[t.List[str]]
+    bad_lines: list[list[str]]
     dataframe: pd.DataFrame
 
 
 def read_csv_chunks(
     path: str,
     chunksize: int,
-    **kwargs
+    **kwargs: t.Any
 ) -> a.Generator[ReadCsvResult, None, None]:
     """
     Reads a CSV file in chunks and captures malformed lines.
@@ -48,7 +53,7 @@ def read_csv_chunks(
     ...     print(result.bad_lines)
     ...     print(result.dataframe)
     """
-    bad_lines: t.List[t.List[str]] = []
+    bad_lines: list[list[str]] = []
     kwargs.update({"on_bad_lines": bad_lines.append, "engine": "python"})
 
     chunks = pd.read_csv(path, chunksize=chunksize, **kwargs)
@@ -59,7 +64,7 @@ def read_csv_chunks(
 
 def read_csv_all(
     path: str,
-    **kwargs
+    **kwargs: t.Any
 ) -> ReadCsvResult:
     """
     Reads an entire CSV file and captures malformed lines.
@@ -82,7 +87,7 @@ def read_csv_all(
     >>> print(result.bad_lines)
     >>> print(result.dataframe)
     """
-    bad_lines: t.List[t.List[str]] = []
+    bad_lines: list[list[str]] = []
     kwargs.update({"on_bad_lines": bad_lines.append, "engine": "python"})
     df: pd.DataFrame = pd.read_csv(path, **kwargs)
     return ReadCsvResult(bad_lines, df)
@@ -91,9 +96,9 @@ def read_csv_all(
 def read_csv(
     path: str,
     *,
-    chunksize: Optional[int] = None,
-    **kwargs
-) -> Union[ReadCsvResult, a.Generator[ReadCsvResult, None, None]]:
+    chunksize: int | None = None,
+    **kwargs: t.Any
+) -> ReadCsvResult | a.Generator[ReadCsvResult, None, None]:
     """
     Reads a CSV file and optionally processes it in chunks, capturing malformed lines.
 
