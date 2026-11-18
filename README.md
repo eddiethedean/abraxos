@@ -1,450 +1,106 @@
 # Abraxos
 
 [![PyPI version](https://img.shields.io/pypi/v/abraxos.svg?style=flat)](https://pypi.org/project/abraxos/)
-[![Documentation Status](https://readthedocs.org/projects/abraxos/badge/?version=latest)](https://abraxos.readthedocs.io/en/latest/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-118%20passing-brightgreen)](https://github.com/eddiethedean/abraxos)
-[![Coverage](https://img.shields.io/badge/coverage-92%25-brightgreen)](https://github.com/eddiethedean/abraxos)
+[![Documentation status](https://readthedocs.org/projects/abraxos/badge/?version=latest)](https://abraxos.readthedocs.io/en/latest/)
+[![CI](https://github.com/eddiethedean/abraxos/actions/workflows/ci.yml/badge.svg)](https://github.com/eddiethedean/abraxos/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat)](https://github.com/eddiethedean/abraxos/blob/main/LICENSE.txt)
 
-**Abraxos** is a lightweight Python toolkit for robust, row-aware data processing using Pandas and Pydantic. It helps you build resilient ETL pipelines that gracefully handle errors at the row level.
+Abraxos helps you build pandas ETL pipelines that can keep processing after a row fails. Read CSVs, transform and validate DataFrames, and load them into SQL while keeping rejected records available for inspection.
 
-## ✨ Why Abraxos?
+[Documentation](https://abraxos.readthedocs.io/en/latest/) · [API reference](https://abraxos.readthedocs.io/en/latest/api.html) · [Upgrade guide](https://abraxos.readthedocs.io/en/latest/upgrading.html)
 
-Traditional data pipelines fail completely when they encounter a single bad row. Abraxos changes that:
+## Installation
 
-- 🛡️ **Fault-tolerant by design** - isolate and recover from row-level errors
-- 🔍 **Full error visibility** - see exactly which rows failed and why
-- 🔄 **Automatic retry logic** - recursive splitting to isolate problem rows
-- 📊 **Production-ready** - 118 tests, 92% coverage, type-safe
-
----
-
-## 🚀 Features
-
-- 📄 **CSV Ingestion with Bad Line Recovery**  
-  Read CSVs in full or in chunks, automatically capturing malformed lines separately.
-
-- 🔁 **Transform DataFrames Resiliently**  
-  Apply transformation functions and automatically isolate rows that fail.
-
-- 🧪 **Pydantic-Based Row Validation**  
-  Validate each row using Pydantic models, separating valid and invalid records.
-
-- 🛢️ **SQL Insertion with Error Splitting**  
-  Insert DataFrames into SQL databases with automatic retry and chunking for failed rows.
-
----
-
-## 📦 Installation
+Abraxos requires **Python 3.11+** and **pandas 2.3.3+**, including pandas 3.x.
 
 ```bash
-pip install abraxos
+uv venv --python 3.11
+uv pip install abraxos
 ```
 
-**With optional dependencies:**
+The base package includes CSV reading, transformations, and DataFrame utilities. Install the optional integrations for SQLAlchemy and Pydantic as needed. Both extras are used by the example below.
+
 ```bash
-# For SQL support
-pip install abraxos[sql]
-
-# For Pydantic validation
-pip install abraxos[validate]
-
-# For development
-pip install abraxos[dev]
-
-# Everything
-pip install abraxos[all]
+uv pip install 'abraxos[sql,validate]'
 ```
 
-**Requirements:**
-- Python 3.10+
-- pandas >= 1.5.0
-- numpy >= 1.23.0
-- Optional: sqlalchemy >= 2.0.0
-- Optional: pydantic >= 2.0.0
+The same package names and extras work with `python -m pip install` in an activated virtual environment. The `sql` extra installs SQLAlchemy 2.0.44 or later, and `validate` installs Pydantic 2.12 or later.
 
----
+## Quick start
 
-## 📖 Documentation
-
-Full documentation is available at: [https://abraxos.readthedocs.io](https://abraxos.readthedocs.io)
-
----
-
-## 🎯 Quick Start
-
-Here are real, tested examples showing Abraxos in action:
-
-### 🔍 Example 1: Read CSVs with Error Recovery
-
-Abraxos captures malformed lines instead of crashing your pipeline:
+This pipeline reads a CSV, trims names, validates ages, and creates a SQLite table with a primary key. The sample includes one rejected record at each of the CSV, validation, and SQL stages.
 
 ```python
-from abraxos import read_csv
+from io import StringIO
 
-# Read a CSV that has some malformed lines
-result = read_csv("data.csv")
+from pydantic import BaseModel, Field
+from sqlalchemy import Column, Integer, MetaData, String, Table, create_engine
 
-print("Bad lines:", result.bad_lines)
-print("\nClean data:")
-print(result.dataframe)
-```
+from abraxos import read_csv, to_sql, transform, validate
 
-**Output:**
-```
-Bad lines: [['TOO', 'MANY', 'COLUMNS', 'HERE']]
+source = StringIO(
+    'person_id,name,age\n1, Ada ,28\noops,too,many,fields\n2, Grace ,invalid\n1, Duplicate ,34\n'
+)
+extracted = read_csv(source)
+cleaned = transform(extracted.dataframe, lambda batch: batch.assign(name=batch['name'].str.strip()))
 
-Clean data:
-   id    name  age
-0   1     Joe   28
-1   2   Alice   35
-2   3  Marcus   40
-```
-
----
-
-### 🧼 Example 2: Transform with Fault Isolation
-
-Apply transformations that automatically isolate problematic rows:
-
-```python
-import pandas as pd
-from abraxos import transform
-
-df = pd.DataFrame({
-    'id': [1, 2, 3],
-    'name': ['  Joe  ', '  Alice  ', '  Marcus  '],
-    'age': [28, 35, 40]
-})
-
-def clean_data(df):
-    df = df.copy()
-    df["name"] = df["name"].str.strip().str.lower()
-    return df
-
-result = transform(df, clean_data)
-print("Errors:", result.errors)
-print("\nSuccess DataFrame:")
-print(result.success_df)
-```
-
-**Output:**
-```
-Errors: []
-
-Success DataFrame:
-   id    name  age
-0   1     joe   28
-1   2   alice   35
-2   3  marcus   40
-```
-
----
-
-### ⚡ Example 3: Automatic Error Isolation
-
-When transformation fails on some rows, Abraxos automatically isolates them:
-
-```python
-import pandas as pd
-from abraxos import transform
-
-df = pd.DataFrame({'value': [1, 2, 0, 3, 4]})
-
-def divide_by_value(df):
-    df = df.copy()
-    if (df['value'] == 0).any():
-        raise ValueError('Cannot divide by zero')
-    df['result'] = 100 / df['value']
-    return df
-
-result = transform(df, divide_by_value)
-
-print(f"Errors encountered: {len(result.errors)}")
-print(f"\nSuccessful rows ({len(result.success_df)}):")
-print(result.success_df)
-print(f"\nFailed rows ({len(result.errored_df)}):")
-print(result.errored_df)
-```
-
-**Output:**
-```
-Errors encountered: 1
-
-Successful rows (4):
-   value      result
-0      1  100.000000
-1      2   50.000000
-3      3   33.333333
-4      4   25.000000
-
-Failed rows (1):
-   value
-2      0
-```
-
-Notice how Abraxos automatically isolated the problematic row (value=0) and processed the rest!
-
----
-
-### ✅ Example 4: Validate with Pydantic
-
-Validate each row and separate valid from invalid data:
-
-```python
-import pandas as pd
-from abraxos import validate
-from pydantic import BaseModel
 
 class Person(BaseModel):
+    id: int = Field(alias='person_id')
     name: str
-    age: int
+    age: int = Field(ge=0)
 
-df = pd.DataFrame({
-    'name': ['Joe', 'Alice', 'Marcus'],
-    'age': [28, 'invalid', 40]
-})
 
-result = validate(df, Person)
+checked = validate(cleaned.success_df, Person, output='model')
+people = Table(
+    'people',
+    MetaData(),
+    Column('id', Integer, primary_key=True),
+    Column('name', String(100), nullable=False),
+    Column('age', Integer, nullable=False),
+)
 
-print("Valid rows:")
-print(result.success_df)
-print(f"\nNumber of validation errors: {len(result.errors)}")
-print("\nInvalid rows:")
-print(result.errored_df)
+engine = create_engine('sqlite://')
+try:
+    with engine.begin() as connection:
+        loaded = to_sql(checked.success_df, people.name, connection, table=people)
+        stored = connection.execute(people.select().order_by(people.c.id)).all()
+finally:
+    engine.dispose()
+
+print('CSV rejections:', extracted.bad_lines)
+print('Validation rejections:', checked.errored_df['name'].tolist())
+print('SQL rejections:', loaded.errored_df['name'].tolist())
+print('Stored people:', stored)
 ```
 
-**Output:**
-```
-Valid rows:
-     name  age
-0     Joe   28
-2  Marcus   40
-
-Number of validation errors: 1
-
-Invalid rows:
-    name      age
-1  Alice  invalid
+```text
+CSV rejections: [['oops', 'too', 'many', 'fields']]
+Validation rejections: ['Grace']
+SQL rejections: ['Duplicate']
+Stored people: [(1, 'Ada', 28)]
 ```
 
----
+## Working with results
 
-### 🗃️ Example 5: SQL Insertion with Retry Logic
+| Operation | Result and recovery behavior |
+| --- | --- |
+| `read_csv(source)` | `dataframe` contains accepted records. `bad_lines` contains records with the wrong number of fields. A CSV syntax error that prevents recovery raises `CsvParseError` with its source and starting line. |
+| `read_csv(source, chunksize=1000)` | Produces the same result type for each chunk. Rejected records count toward `chunksize`. Pass `dtype` for consistent conversion across chunks. |
+| `transform(df, callback)` | Retries failed batches on smaller partitions. Pass `split_on_error=False` for operations such as ranking or normalization that need the entire frame. |
+| `validate(df, Model)` | Maps validated values to input columns by default. Pass `output='model'` for serialized fields and defaults, or `column_map` for an explicit input-to-output mapping. |
+| `to_sql(df, name, con)` | Rolls back and retries recoverable append failures on SQLAlchemy SQLite and PostgreSQL connections. Pass `table=` to define the schema for a new table. |
+| `use_sql(df, con, insert)` | Executes a supplied insert statement and leaves the SQLAlchemy transaction open for the caller to commit or roll back. |
 
-Insert data into SQL with automatic error handling:
+`transform`, `validate`, `to_sql`, and `use_sql` return `success_df`, `errored_df`, and `errors`. Terminal SQL failures raise `LoadError`. A raw `sqlite3.Connection` supports one standalone write with autocommit disabled. Use SQLAlchemy for transactional retries and table replacement.
 
-```python
-import pandas as pd
-from abraxos import to_sql
-from sqlalchemy import create_engine
-
-engine = create_engine("sqlite:///example.db")
-
-df = pd.DataFrame({
-    'name': ['Joe', 'Alice', 'Marcus'],
-    'age': [28, 35, 40]
-})
-
-result = to_sql(df, "people", engine)
-
-print(f"Successful inserts: {result.success_df.shape[0]}")
-print(f"Failed rows: {result.errored_df.shape[0]}")
-```
-
-**Output:**
-```
-Successful inserts: 3
-Failed rows: 0
-
-Data in database:
-     name  age
-0     Joe   28
-1   Alice   35
-2  Marcus   40
-```
-
----
-
-### 📚 Example 6: Process Large Files in Chunks
-
-Read and process large CSV files efficiently:
-
-```python
-from abraxos import read_csv
-
-# Read in chunks of 1000 rows
-for chunk_result in read_csv("large_file.csv", chunksize=1000):
-    print(f"Processing chunk with {len(chunk_result.dataframe)} rows")
-    print(f"Bad lines in this chunk: {len(chunk_result.bad_lines)}")
-    
-    # Process the chunk
-    # ... your processing logic here
-```
-
-**Output:**
-```
-Reading in chunks of 2 rows:
-
-Chunk 1:
-   id  value
-0   1     10
-1   2     20
-
-Chunk 2:
-   id  value
-2   3     30
-3   4     40
-
-Chunk 3:
-   id  value
-4   5     50
-```
-
----
-
-## 🔄 Complete ETL Pipeline Example
-
-Here's a complete example combining multiple features:
-
-```python
-from abraxos import read_csv, transform, validate, to_sql
-from pydantic import BaseModel
-from sqlalchemy import create_engine
-
-# 1. Extract: Read CSV with error recovery
-csv_result = read_csv("messy_data.csv")
-print(f"Captured {len(csv_result.bad_lines)} bad lines")
-
-# 2. Transform: Clean the data
-def clean_data(df):
-    df = df.copy()
-    df['name'] = df['name'].str.strip().str.title()
-    df['age'] = pd.to_numeric(df['age'], errors='coerce')
-    return df.dropna()
-
-transform_result = transform(csv_result.dataframe, clean_data)
-print(f"Transformed {len(transform_result.success_df)} rows successfully")
-
-# 3. Validate: Ensure data quality
-class Person(BaseModel):
-    name: str
-    age: int
-
-validate_result = validate(transform_result.success_df, Person)
-print(f"Validated {len(validate_result.success_df)} rows")
-print(f"Validation failed for {len(validate_result.errored_df)} rows")
-
-# 4. Load: Insert into database
-engine = create_engine("sqlite:///clean_data.db")
-load_result = to_sql(validate_result.success_df, "people", engine)
-print(f"Loaded {len(load_result.success_df)} rows to database")
-
-# Save error reports
-csv_result.bad_lines  # Malformed CSV lines
-transform_result.errored_df  # Rows that failed transformation
-validate_result.errored_df  # Rows that failed validation
-load_result.errored_df  # Rows that failed to insert
-```
-
----
-
-## 🏗️ API Reference
-
-### Core Functions
-
-#### `read_csv(path, *, chunksize=None, **kwargs) -> ReadCsvResult | Generator`
-Read CSV files with automatic bad line recovery.
-
-**Returns:** `ReadCsvResult(bad_lines, dataframe)` or generator of results if chunked.
-
-#### `transform(df, transformer, chunks=2) -> TransformResult`
-Apply a transformation function with automatic error isolation.
-
-**Returns:** `TransformResult(errors, errored_df, success_df)`
-
-#### `validate(df, model) -> ValidateResult`
-Validate DataFrame rows using a Pydantic model.
-
-**Returns:** `ValidateResult(errors, errored_df, success_df)`
-
-#### `to_sql(df, name, con, *, if_exists='append', chunks=2, **kwargs) -> ToSqlResult`
-Insert DataFrame into SQL database with retry logic.
-
-**Returns:** `ToSqlResult(errors, errored_df, success_df)`
-
-### Utility Functions
-
-- `split(df, n=2)` - Split DataFrame into n parts
-- `clear(df)` - Create empty DataFrame with same schema
-- `to_records(df)` - Convert DataFrame to list of dicts with None for NaN
-
----
-
-## 🧪 Testing & Development
-
-Abraxos is thoroughly tested and type-safe:
+## Development
 
 ```bash
-# Install with dev dependencies
-pip install -e ".[dev]"
-
-# Run tests with coverage (118 tests, 92% coverage)
-pytest
-
-# Run type checking
-mypy abraxos  # Success: no issues found
-
-# Run linting and formatting
-ruff check .  # All checks passed
-ruff format .
+uv sync --locked
+uv run --locked pytest
+uv run --locked sphinx-build -W -b html docs docs/_build/html
+uv run --locked sphinx-build -W -b doctest docs docs/_build/doctest
 ```
 
-**Test Coverage:**
-- 118 tests passing
-- 92% code coverage
-- All major code paths tested
-- Type-safe with mypy
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
-
-**Quick checklist:**
-- ✅ Add tests for new features
-- ✅ Maintain 90%+ coverage
-- ✅ Pass all type checks (`mypy abraxos`)
-- ✅ Pass all lints (`ruff check .`)
-- ✅ Update documentation
-
----
-
-## 📝 Changelog
-
-See [CHANGELOG.md](CHANGELOG.md) for version history and migration guides.
-
----
-
-## 📄 License
-
-MIT License © 2024 Odos Matthews
-
----
-
-## 🧙‍♂️ Author
-
-Crafted by [Odos Matthews](https://github.com/eddiethedean) to bring resilience and magic to data workflows.
-
----
-
-## ⭐ Support
-
-If Abraxos helps your project, consider:
-- ⭐ Starring the repo
-- 🐛 Reporting issues
-- 🤝 Contributing improvements
-- 📢 Sharing with others
-
-**Happy data processing! 🚀**
+See the [contribution guide](https://github.com/eddiethedean/abraxos/blob/main/CONTRIBUTING.md) for linting, type checks, and PostgreSQL integration tests. See the [changelog](https://github.com/eddiethedean/abraxos/blob/main/CHANGELOG.md) for release history. Abraxos is maintained by [Odos Matthews](https://github.com/eddiethedean) and licensed under [MIT](https://github.com/eddiethedean/abraxos/blob/main/LICENSE.txt).

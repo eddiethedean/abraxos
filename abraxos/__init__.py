@@ -2,14 +2,14 @@
 
 from __future__ import annotations
 
-__version__ = '0.1.0'
-
-from .exceptions import AbraxosError, LoadError, TransformError, ValidationError
+from .exceptions import AbraxosError, CsvParseError, LoadError, TransformError, ValidationError
 from .extract import ReadCsvResult, read_csv, read_csv_chunks
 from .load import ToSqlResult, to_sql, use_sql
 from .transform import TransformResult, transform
 from .utils import clear, split, to_records
 from .validate import ValidateResult, validate
+
+__version__ = '0.2.0'
 
 __all__ = [
     # Version
@@ -34,6 +34,7 @@ __all__ = [
     'to_records',
     # Exceptions
     'AbraxosError',
+    'CsvParseError',
     'TransformError',
     'ValidationError',
     'LoadError',

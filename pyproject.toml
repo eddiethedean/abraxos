@@ -1,19 +1,25 @@
 [build-system]
-requires = ["setuptools >= 61.0"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 
 [project]
 name = "abraxos"
-version = "0.1.0"
-description = "Upgrade your Pandas ETL process."
+dynamic = ["version"]
+description = "Row-aware CSV ingestion, transformation, validation, and SQL loading for pandas."
 readme = "README.md"
-requires-python = ">=3.10"
-dependencies = [
-    "pandas>=1.5.0",
-    "numpy>=1.23.0"
+requires-python = ">=3.11"
+dependencies = ["pandas>=2.3.3"]
+license = "MIT"
+license-files = ["LICENSE.txt"]
+classifiers = [
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Typing :: Typed",
 ]
-license = {text = "MIT License"}
 keywords = ["etl", "validation", "sql", "csv", "pandas", "pydantic"]
 authors = [
     {name = "Odos Matthews", email = "eddiethedean@gmail.com"}
@@ -21,32 +27,41 @@ authors = [
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=7.4.0",
-    "pytest-cov>=4.1.0",
-    "mypy>=1.5.0",
-    "ruff>=0.1.0",
-    "pre-commit>=3.4.0",
+    "mypy>=1.19",
+    "pandas-stubs>=2.3.3",
+    "pre-commit>=4.2",
+    "pytest>=8.4",
+    "pytest-cov>=7",
+    "ruff>=0.16.3",
+    "twine>=6.2",
 ]
-sql = [
-    "sqlalchemy>=2.0.0"
+sql = ["sqlalchemy>=2.0.44"]
+validate = ["pydantic>=2.12"]
+docs = [
+    "furo>=2025.12.19",
+    "sphinx>=8.2",
 ]
-validate = [
-    "pydantic>=2.0.0"
-]
-all = [
-    "abraxos[dev,sql,validate]"
-]
+all = ["abraxos[dev,docs,sql,validate]"]
 
-[tool.setuptools.packages]
-find = {}
+[dependency-groups]
+dev = ["abraxos[all]"]
+postgres = ["psycopg[binary]>=3.3"]
+
+[tool.setuptools.dynamic]
+version = {attr = "abraxos.__version__"}
+
+[tool.setuptools.packages.find]
+include = ["abraxos", "abraxos.*"]
 
 [project.urls]
 Documentation = "https://abraxos.readthedocs.io"
 Source = "https://github.com/eddiethedean/abraxos"
 Tracker = "https://github.com/eddiethedean/abraxos/issues"
+Changelog = "https://github.com/eddiethedean/abraxos/blob/main/CHANGELOG.md"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = ["postgres: integration test requiring a PostgreSQL test database"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
@@ -56,8 +71,6 @@ addopts = [
     "-ra",
     "--cov=abraxos",
     "--cov-report=term-missing",
-    "--cov-report=html",
-    "--cov-report=xml",
 ]
 
 [tool.coverage.run]
@@ -77,7 +90,7 @@ exclude_lines = [
 ]
 
 [tool.mypy]
-python_version = "3.10"
+python_version = "3.11"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
@@ -89,18 +102,10 @@ warn_redundant_casts = true
 warn_unused_ignores = true
 warn_no_return = true
 strict_equality = true
-strict_concatenate = true
-
-[[tool.mypy.overrides]]
-module = "pandas.*"
-ignore_missing_imports = true
-
-[[tool.mypy.overrides]]
-module = "numpy.*"
-ignore_missing_imports = true
+extra_checks = true
 
 [tool.ruff]
-target-version = "py310"
+target-version = "py311"
 line-length = 100
 
 [tool.ruff.lint]

@@ -2,6 +2,7 @@
 
 import numpy as np
 import pandas as pd
+import pytest
 
 from abraxos.utils import clear, split, to_records
 
@@ -69,7 +70,6 @@ class TestSplit:
         """Test when chunk count > row count."""
         parts = split(sample_df, 10)
 
-        # numpy.array_split handles this gracefully
         assert len(parts) == 10
         non_empty = [p for p in parts if not p.empty]
         assert len(non_empty) == len(sample_df)
@@ -81,6 +81,27 @@ class TestSplit:
 
         all_indices = pd.concat(parts).index
         assert list(all_indices) == [10, 20, 30]
+
+    def test_split_preserves_nullable_and_categorical_dtypes(self):
+        df = pd.DataFrame(
+            {'id': pd.array([1, None, 3], dtype='Int64'), 'kind': pd.Categorical(['a', 'b', 'b'])}
+        )
+
+        first, second = split(df)
+
+        assert len(first) == 2
+        pd.testing.assert_frame_equal(pd.concat([first, second]), df)
+
+    def test_split_rejects_zero_parts(self, sample_df):
+        with pytest.raises(ValueError, match='i must be at least 1'):
+            split(sample_df, 0)
+
+    def test_partitions_allow_assignments_without_affecting_the_original(self):
+        df = pd.DataFrame({'id': [1, 2]})
+        first, second = split(df)
+        first.iloc[0, 0] = 99
+        assert df['id'].tolist() == [1, 2]
+        assert second['id'].tolist() == [2]
 
 
 class TestClear:
@@ -101,11 +122,9 @@ class TestClear:
 
     def test_clear_preserves_dtypes(self):
         """Test that clear preserves data types."""
-        df = pd.DataFrame({
-            'int_col': [1, 2, 3],
-            'str_col': ['a', 'b', 'c'],
-            'float_col': [1.0, 2.0, 3.0]
-        })
+        df = pd.DataFrame(
+            {'int_col': [1, 2, 3], 'str_col': ['a', 'b', 'c'], 'float_col': [1.0, 2.0, 3.0]}
+        )
         result = clear(df)
 
         assert result['int_col'].dtype == df['int_col'].dtype
@@ -138,6 +157,27 @@ class TestClear:
 class TestToRecords:
     """Tests for to_records function."""
 
+    def test_duplicate_labels_are_rejected(self):
+        df = pd.DataFrame([[1, 2]], columns=['id', 'id'])
+        with pytest.raises(ValueError, match='labels must be unique'):
+            to_records(df)
+
+    def test_normalizes_missing_values_across_dtypes(self):
+        df = pd.DataFrame(
+            {
+                'text': pd.array(['hello', None], dtype='string'),
+                'integer': pd.array([1, pd.NA], dtype='Int64'),
+                'time': pd.to_datetime(['2026-01-01', None]),
+            }
+        )
+        assert to_records(df) == [
+            {'text': 'hello', 'integer': 1, 'time': pd.Timestamp('2026-01-01')},
+            {'text': None, 'integer': None, 'time': None},
+        ]
+
+    def test_preserves_rows_in_zero_column_dataframe(self):
+        assert to_records(pd.DataFrame(index=['one', 'two'])) == [{}, {}]
+
     def test_to_records_basic(self, sample_df):
         """Test converting DataFrame to records."""
         records = to_records(sample_df)
@@ -163,10 +203,7 @@ class TestToRecords:
 
     def test_to_records_with_nan(self):
         """Test that NaN is converted to None."""
-        df = pd.DataFrame({
-            'a': [1, np.nan, 3],
-            'b': ['x', 'y', None]
-        })
+        df = pd.DataFrame({'a': [1, np.nan, 3], 'b': ['x', 'y', None]})
         records = to_records(df)
 
         assert records[1]['a'] is None
@@ -187,12 +224,14 @@ class TestToRecords:
 
     def test_to_records_preserves_types(self):
         """Test that to_records preserves data types."""
-        df = pd.DataFrame({
-            'int_col': [1, 2],
-            'str_col': ['a', 'b'],
-            'float_col': [1.5, 2.5],
-            'bool_col': [True, False]
-        })
+        df = pd.DataFrame(
+            {
+                'int_col': [1, 2],
+                'str_col': ['a', 'b'],
+                'float_col': [1.5, 2.5],
+                'bool_col': [True, False],
+            }
+        )
         records = to_records(df)
 
         assert isinstance(records[0]['int_col'], (int, np.integer))
@@ -202,10 +241,7 @@ class TestToRecords:
 
     def test_to_records_with_none_values(self):
         """Test DataFrame with explicit None values."""
-        df = pd.DataFrame({
-            'a': [1, None, 3],
-            'b': ['x', None, 'z']
-        })
+        df = pd.DataFrame({'a': [1, None, 3], 'b': ['x', None, 'z']})
         records = to_records(df)
 
         # None should remain None
@@ -231,8 +267,4 @@ class TestIntegration:
         df_new = pd.DataFrame(records)
 
         # Should be equivalent (column order might differ)
-        pd.testing.assert_frame_equal(
-            df_new[sample_df.columns],
-            sample_df.reset_index(drop=True)
-        )
-
+        pd.testing.assert_frame_equal(df_new[sample_df.columns], sample_df.reset_index(drop=True))

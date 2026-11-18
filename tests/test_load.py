@@ -1,7 +1,10 @@
 """Tests for abraxos.load module."""
 
 import pandas as pd
+import pytest
+from sqlalchemy import Column, Integer, MetaData, Table
 
+from abraxos.exceptions import LoadError
 from abraxos.load import ToSqlResult, insert_df, to_sql, use_sql
 
 
@@ -109,19 +112,71 @@ class TestToSqlChunking:
 class TestToSqlPartialFailure:
     """Tests for partial failures in SQL insertions."""
 
-    def test_isolates_bad_row(self, sqlite_engine):
-        """Test that bad rows are isolated using chunking."""
-        # Create a mock failing scenario
-        # This is hard to test with real SQLite, so we'll test the structure
-        df = pd.DataFrame({'id': [1, 2, 3, 4, 5]})
-        result = to_sql(df, 'test_isolate', sqlite_engine)
+    @pytest.mark.parametrize('use_connection', [False, True])
+    def test_rolls_back_partial_writes_before_retrying(self, sqlite_engine, use_connection):
+        with sqlite_engine.begin() as connection:
+            connection.exec_driver_sql('CREATE TABLE items (id INTEGER PRIMARY KEY CHECK(id > 0))')
 
-        # All should succeed in this case
-        assert len(result.success_df) + len(result.errored_df) == len(df)
+        df = pd.DataFrame({'id': [1, -1, 2]})
+        with sqlite_engine.connect() as connection:
+            if use_connection:
+                transaction = connection.begin()
+                result = to_sql(df, 'items', connection, method=None, chunksize=1)
+                assert connection.exec_driver_sql(
+                    'SELECT id FROM items ORDER BY id'
+                ).scalars().all() == [1, 2]
+                transaction.rollback()
+            else:
+                result = to_sql(df, 'items', sqlite_engine, method=None, chunksize=1)
+
+            assert len(result.errors) == 1
+            assert result.errored_df['id'].tolist() == [-1]
+            assert result.success_df['id'].tolist() == [1, 2]
+            expected = [] if use_connection else [1, 2]
+            assert (
+                connection.exec_driver_sql('SELECT id FROM items ORDER BY id').scalars().all()
+                == expected
+            )
+
+    def test_failed_replace_preserves_the_existing_sqlite_table(self, sqlite_engine):
+        original = pd.DataFrame({'id': [10]})
+        to_sql(original, 'items', sqlite_engine)
+
+        def fail_after_insert(table, connection, keys, rows):
+            records = [dict(zip(keys, row, strict=True)) for row in rows]
+            connection.execute(table.table.insert(), records)
+            raise ValueError('Failed after insert')
+
+        df = pd.DataFrame({'id': [1, 2]})
+        with pytest.raises(LoadError) as raised:
+            to_sql(df, 'items', sqlite_engine, if_exists='replace', method=fail_after_insert)
+
+        assert isinstance(raised.value.__cause__, ValueError)
+        pd.testing.assert_frame_equal(pd.read_sql_table('items', sqlite_engine), original)
 
 
 class TestUseSql:
     """Tests for use_sql function."""
+
+    def test_real_sqlalchemy_retries_and_leaves_transaction_open(self, sqlite_engine):
+        metadata = MetaData()
+        table = Table('items', metadata, Column('id', Integer, primary_key=True))
+        metadata.create_all(sqlite_engine)
+        df = pd.DataFrame({'id': [1, 1, 2]})
+
+        with sqlite_engine.connect() as connection:
+            empty = use_sql(df.iloc[:0], connection, table.insert())
+            assert empty.errors == []
+            assert not connection.in_transaction()
+
+            result = use_sql(df, connection, table.insert())
+
+            assert len(result.errors) == 1
+            assert result.errored_df.index.tolist() == [1]
+            assert result.success_df.index.tolist() == [0, 2]
+            assert connection.execute(table.select().order_by(table.c.id)).scalars().all() == [1, 2]
+            connection.rollback()
+            assert connection.execute(table.select()).all() == []
 
     def test_use_sql_with_mock_connection(self):
         """Test use_sql with mocked connection."""
@@ -160,7 +215,12 @@ class TestUseSql:
             pass
 
         df = pd.DataFrame({'name': ['Alice', 'Bob', 'Charlie']})
-        result = use_sql(df, FailingConnection(), MockQuery())
+        result = use_sql(
+            df,
+            FailingConnection(),
+            MockQuery(),
+            retry_if=lambda error: isinstance(error, ValueError),
+        )
 
         # Should have isolated Bob
         assert len(result.errors) > 0
@@ -179,7 +239,13 @@ class TestUseSql:
             pass
 
         df = pd.DataFrame({'value': range(10)})
-        result = use_sql(df, FailingConnection(), MockQuery(), chunks=3)
+        result = use_sql(
+            df,
+            FailingConnection(),
+            MockQuery(),
+            chunks=3,
+            retry_if=lambda error: isinstance(error, ValueError),
+        )
 
         # Should split into smaller chunks
         assert len(result.success_df) + len(result.errored_df) == len(df)
@@ -245,10 +311,7 @@ class TestIntegration:
         """Test inserting DataFrame with NaN values."""
         import numpy as np
 
-        df = pd.DataFrame({
-            'a': [1, np.nan, 3],
-            'b': ['x', 'y', None]
-        })
+        df = pd.DataFrame({'a': [1, np.nan, 3], 'b': ['x', 'y', None]})
 
         result = to_sql(df, 'with_nans', sqlite_engine)
 
@@ -257,4 +320,3 @@ class TestIntegration:
         with sqlite_engine.connect() as conn:
             query_result = pd.read_sql('SELECT * FROM with_nans', conn)
             assert len(query_result) == 3
-

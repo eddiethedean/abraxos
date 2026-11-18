@@ -1,10 +1,173 @@
 """Tests for abraxos.extract module."""
 
-from io import StringIO
+import gzip
+from io import BytesIO, StringIO
 
 import pandas as pd
+import pytest
 
+from abraxos import CsvParseError
 from abraxos.extract import ReadCsvResult, read_csv, read_csv_all, read_csv_chunks
+
+
+class TestRecordRecovery:
+    def test_full_and_chunked_reads_agree_on_width_and_multiline_fields(self):
+        content = 'id,name\nEXTRA,1,Alice\n2,Bob\n3\n4,"Carol,\nDee"\n5,Emma,EXTRA\n'
+        options = {'dtype': {'id': 'Int64', 'name': 'string'}}
+
+        with StringIO(content) as complete_source, StringIO(content) as chunk_source:
+            complete = read_csv(complete_source, **options)
+            chunks = list(read_csv(chunk_source, chunksize=1, **options))
+            assert not complete_source.closed
+            assert not chunk_source.closed
+
+        assert complete.bad_lines == [['EXTRA', '1', 'Alice'], ['3'], ['5', 'Emma', 'EXTRA']]
+        assert [line for result in chunks for line in result.bad_lines] == complete.bad_lines
+        assert [len(result.dataframe) for result in chunks] == [0, 1, 0, 1, 0]
+        pd.testing.assert_frame_equal(
+            pd.concat([result.dataframe for result in chunks]), complete.dataframe
+        )
+        assert complete.dataframe['id'].tolist() == [2, 4]
+        assert complete.dataframe['name'].tolist() == ['Bob', 'Carol,\nDee']
+
+    def test_width_is_checked_before_index_and_column_projection(self):
+        data = StringIO('id,name,city\n1,TOO,MANY,COLUMNS\n2,Bob,NYC\n3,Carol,SF\n')
+        result = read_csv(data, index_col='id', usecols=['id', 'name'])
+        assert result.bad_lines == [['1', 'TOO', 'MANY', 'COLUMNS']]
+        assert result.dataframe.index.tolist() == [2, 3]
+        assert result.dataframe.to_dict('records') == [{'name': 'Bob'}, {'name': 'Carol'}]
+
+    @pytest.mark.parametrize('malformed', ['2,"bad"tail\n3,Carol\n', '2,"unterminated\n3,Carol\n'])
+    @pytest.mark.parametrize('chunksize', [None, 1])
+    def test_bad_quoting_reports_start_of_logical_record(self, malformed, chunksize):
+        source = StringIO('id,name\n1,"Alice\ncontinued"\n' + malformed)
+        source.name = 'example.csv'
+        with pytest.raises(CsvParseError, match='example.csv, line 4') as raised:
+            result = read_csv(source, chunksize=chunksize)
+            if chunksize is not None:
+                list(result)
+        assert raised.value.source == 'example.csv'
+        assert raised.value.line == 4
+        assert not source.closed
+
+    def test_skiprows_comments_and_footer_apply_to_the_original_source(self):
+        data = StringIO(
+            '"ignored prologue\n'
+            '# note\n'
+            'id;name\n'
+            '1;"value # in\n# quoted data"# inline note\n'
+            '2;yes\n'
+            'footer;with;extra;fields\n'
+        )
+        chunks = list(read_csv(data, sep=';', comment='#', skiprows={0}, skipfooter=1, chunksize=1))
+        assert [result.bad_lines for result in chunks] == [[], []]
+        assert [result.dataframe.iloc[0]['name'] for result in chunks] == [
+            'value # in\n# quoted data',
+            'yes',
+        ]
+
+    def test_explicit_names_declare_headerless_width_and_nrows_counts_accepted_rows(self):
+        content = 'too,many,fields\n2,Bob\n3,"outside nrows\n'
+        options = {'names': ['id', 'name'], 'nrows': 1}
+        result = read_csv(StringIO(content), **options)
+        assert result.bad_lines == [['too', 'many', 'fields']]
+        assert result.dataframe.to_dict('records') == [{'id': 2, 'name': 'Bob'}]
+        (chunk,) = read_csv(StringIO(content), chunksize=2, **options)
+        assert chunk.bad_lines == result.bad_lines
+        pd.testing.assert_frame_equal(chunk.dataframe, result.dataframe)
+        empty = read_csv(StringIO('1,Alice\n'), header=None, nrows=0)
+        assert empty.dataframe.columns.tolist() == [0, 1]
+
+    def test_compressed_binary_source_with_bom_and_tab_dialect(self, tmp_path):
+        path = tmp_path / 'records.tsv.gz'
+        path.write_bytes(gzip.compress('\ufeff"id\tkey"\tname\n7\tAlice\n'.encode('utf-8')))
+        result = read_csv(path, dialect='excel-tab')
+        assert result.bad_lines == []
+        assert result.dataframe.to_dict('records') == [{'id\tkey': 7, 'name': 'Alice'}]
+
+    def test_explicit_compression_on_binary_stream(self):
+        with BytesIO(gzip.compress(b'a,b\n1,Alice\n')) as source:
+            result = read_csv(source, compression='gzip')
+            assert result.dataframe.to_dict('records') == [{'a': 1, 'b': 'Alice'}]
+            assert not source.closed
+
+    def test_source_encoding_and_pandas_dtype_apply_at_their_respective_stages(self):
+        content = 'id,city\n001,Zürich\n'.encode('latin-1')
+        with BytesIO(content) as source:
+            result = read_csv(source, encoding='latin-1', dtype={'id': 'string'})
+            assert result.dataframe.to_dict('records') == [{'id': '001', 'city': 'Zürich'}]
+            assert not source.closed
+
+    def test_http_chunks_stream_and_close_the_response(self, monkeypatch):
+        class Response(BytesIO):
+            headers = {}
+
+            def read(self, size=-1):
+                assert size >= 0, 'the HTTP source must not be read in full'
+                return super().read(size)
+
+        response = Response(b'a,b\n1,Alice\n' + b'2,Bob\n' * 10_000)
+        monkeypatch.setattr('abraxos._csv_source.urlopen', lambda request: response)
+        chunks = read_csv('https://example.test/records.csv', chunksize=1)
+        assert next(chunks).dataframe.to_dict('records') == [{'a': 1, 'b': 'Alice'}]
+        assert response.tell() < len(response.getbuffer())
+        chunks.close()
+        assert response.closed
+
+    @pytest.mark.parametrize('malformed', [False, True])
+    def test_http_response_closes_on_exhaustion_or_parse_error(self, monkeypatch, malformed):
+        class Response(BytesIO):
+            headers = {}
+
+        content = b'a,b\n1,Alice\n'
+        if malformed:
+            content += b'2,"unterminated\n'
+        response = Response(content)
+        monkeypatch.setattr('abraxos._csv_source.urlopen', lambda request: response)
+
+        chunks = read_csv('https://example.test/records.csv', chunksize=1)
+        assert next(chunks).dataframe.to_dict('records') == [{'a': 1, 'b': 'Alice'}]
+        assert not response.closed
+        if malformed:
+            with pytest.raises(CsvParseError, match='records.csv, line 3'):
+                next(chunks)
+        else:
+            with pytest.raises(StopIteration):
+                next(chunks)
+        assert response.closed
+
+    def test_chunking_streams_nonseekable_input_and_leaves_caller_owned_stream_open(self):
+        class NonSeekable(StringIO):
+            def seek(self, *_):
+                pytest.fail('chunked reading must not seek')
+
+            def read(self, *_):
+                pytest.fail('chunked reading must not buffer the whole input')
+
+            def seekable(self):
+                return False
+
+        source = NonSeekable('a,b\n1,Alice\n2,Bob\n')
+        with source:
+            records = read_csv(source, chunksize=1)
+            assert next(records).dataframe.to_dict('records') == [{'a': 1, 'b': 'Alice'}]
+            records.close()
+            assert not source.closed
+            assert source.readline() == '2,Bob\n'
+
+    @pytest.mark.parametrize(
+        ('options', 'message'),
+        [
+            ({'engine': 'c'}, 'controls engine'),
+            ({'on_bad_lines': 'skip'}, 'controls engine'),
+            ({'sep': r'\s+'}, 'one-character separator'),
+            ({'dialect': 'excel-tab', 'sep': ','}, 'conflicts'),
+            ({'header': [0, 1]}, 'one header row'),
+        ],
+    )
+    def test_unsupported_boundary_options_fail_explicitly(self, options, message):
+        with pytest.raises(ValueError, match=message):
+            read_csv(StringIO('a,b\n1,Alice\n'), **options)
 
 
 class TestReadCsvResult:
@@ -109,6 +272,15 @@ class TestReadCsvChunks:
 class TestReadCsv:
     """Tests for main read_csv function."""
 
+    def test_rejects_the_pandas_iterator_without_chunksize(self, valid_csv):
+        with pytest.raises(ValueError, match=r'Use read_csv_chunks\(\)'):
+            read_csv(valid_csv, iterator=True)
+
+    def test_chunks_defer_parser_option_validation_until_iteration(self, valid_csv):
+        chunks = read_csv_chunks(valid_csv, chunksize=1, engine='c')
+        with pytest.raises(ValueError, match='controls engine'):
+            next(chunks)
+
     def test_read_without_chunks(self, valid_csv):
         """Test read_csv without chunking."""
         result = read_csv(valid_csv)
@@ -167,4 +339,3 @@ class TestIntegration:
 
         total_rows = sum(len(c.dataframe) for c in chunks)
         assert total_rows == 5
-

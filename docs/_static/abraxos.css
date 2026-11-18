@@ -1,0 +1,262 @@
+/* Reading and navigation styles shared by the light and dark Furo palettes. */
+.sidebar-brand-text {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.035em;
+}
+
+#furo-main-content :is(h1, h2, h3) {
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+#furo-main-content h1 {
+  font-size: clamp(1.95rem, 1.65rem + 0.9vw, 2.6rem);
+}
+
+#furo-main-content h2 {
+  margin-top: 2.25rem;
+  margin-inline: 0;
+  padding-bottom: 0.55rem;
+  padding-inline: 0;
+  border-bottom: 1px solid var(--color-background-border);
+  border-radius: 0;
+}
+
+/* Landing page */
+#furo-main-content .ab-home > h1 {
+  margin-top: 3.25rem;
+  max-width: 17ch;
+  font-size: clamp(2.25rem, 1.55rem + 2.6vw, 3.5rem);
+  letter-spacing: -0.045em;
+  line-height: 1.08;
+  text-wrap: balance;
+}
+
+.ab-lead {
+  max-width: 53ch;
+  font-size: 1.125rem;
+  line-height: 1.6;
+  color: var(--color-foreground-secondary);
+}
+
+.ab-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin: 1.5rem 0 1.75rem;
+}
+
+.ab-actions > p {
+  margin: 0;
+}
+
+.ab-actions a.reference {
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
+  min-height: 2.75rem;
+  padding: 0.55rem 0.9rem;
+  border: 1px solid var(--color-background-border);
+  border-radius: 0.5rem;
+  color: var(--color-brand-content);
+  font-size: 0.9375rem;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.ab-actions a.reference:hover {
+  background-color: var(--color-background-hover);
+}
+
+.ab-actions > p:first-child a.reference {
+  border-color: var(--color-brand-primary);
+  background-color: var(--color-brand-primary);
+  color: var(--color-ab-action-text);
+}
+
+.ab-actions > p:first-child a.reference:hover {
+  border-color: var(--color-brand-content);
+  background-color: var(--color-brand-content);
+}
+
+.ab-actions a:focus-visible,
+.ab-stage a:focus-visible::after {
+  outline: 2px solid var(--color-brand-content);
+  outline-offset: 4px;
+}
+
+#furo-main-content .ab-install {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr);
+  align-items: center;
+  gap: 0.85rem 1.15rem;
+  padding: 1rem;
+  border: 1px solid var(--color-background-border);
+  border-radius: 0.7rem;
+  background-color: var(--color-background-secondary);
+}
+
+.ab-install-details > p {
+  margin: 0;
+}
+
+.ab-install-details > p + p {
+  margin-top: 0.2rem;
+  color: var(--color-foreground-secondary);
+  font-size: 0.875rem;
+}
+
+#furo-main-content .ab-install .highlight-bash,
+#furo-main-content .ab-install .highlight {
+  margin: 0;
+}
+
+#furo-main-content .ab-install .highlight {
+  background-color: var(--color-background-primary);
+}
+
+.ab-stage-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin: 1rem 0 1.3rem;
+}
+
+#furo-main-content .ab-stage {
+  position: relative;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--color-background-border);
+  border-radius: 0.65rem;
+  background-color: var(--color-background-secondary);
+}
+
+#furo-main-content .ab-stage:is(:hover, :focus-within) {
+  border-color: var(--color-brand-primary);
+}
+
+.ab-stage a::after {
+  position: absolute;
+  inset: 0;
+  border-radius: 0.65rem;
+  content: '';
+}
+
+.ab-stage > p {
+  margin: 0;
+}
+
+.ab-stage > p:first-child {
+  font-weight: 700;
+}
+
+.ab-stage > p + p {
+  margin-top: 0.35rem;
+  color: var(--color-foreground-secondary);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+/* Code, signatures, and reference lists */
+#furo-main-content .highlight {
+  border: 1px solid var(--color-background-border);
+  border-radius: 0.5rem;
+  background-color: var(--color-background-secondary);
+}
+
+#furo-main-content .highlight pre {
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+#furo-main-content :is(.highlight-python, .highlight-bash) pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+#furo-main-content dt.sig {
+  box-sizing: border-box;
+  max-width: 100%;
+  margin-inline: 0;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--color-background-border);
+  border-radius: 0.5rem;
+  background-color: var(--color-api-background);
+  overflow-wrap: anywhere;
+  text-indent: 0;
+}
+
+#furo-main-content dt.sig .viewcode-link {
+  display: inline-block;
+  float: none;
+  margin-inline-start: 0.35rem;
+}
+
+#furo-main-content table.autosummary {
+  width: 100%;
+  table-layout: fixed;
+}
+
+#furo-main-content table.autosummary td:first-child {
+  box-sizing: border-box;
+  width: 30%;
+}
+
+#furo-main-content table.autosummary td {
+  padding: 0.7rem 0.75rem;
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+
+#furo-main-content table.autosummary code .pre {
+  white-space: normal;
+}
+
+.ab-sql-modes {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 0.65rem 1rem;
+  padding: 0.95rem 1rem;
+  border: 1px solid var(--color-background-border);
+  border-radius: 0.5rem;
+  background-color: var(--color-background-secondary);
+}
+
+#furo-main-content .ab-sql-modes dd,
+#furo-main-content .ab-sql-modes p {
+  margin: 0;
+}
+
+@media (max-width: 36rem) {
+  #furo-main-content .ab-home > h1 {
+    margin-top: 2.7rem;
+  }
+
+  #furo-main-content .ab-install,
+  .ab-stage-grid,
+  .ab-sql-modes {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ab-sql-modes {
+    row-gap: 0.35rem;
+  }
+
+  .ab-sql-modes dt:not(:first-child) {
+    margin-top: 0.55rem;
+  }
+
+  #furo-main-content table.autosummary td:first-child {
+    width: clamp(7.8rem, 41%, 9rem);
+  }
+
+  #furo-main-content table.autosummary td {
+    padding-inline: 0.6rem;
+    font-size: 0.875rem;
+  }
+
+  #furo-main-content .highlight pre {
+    font-size: 0.8125rem;
+  }
+}

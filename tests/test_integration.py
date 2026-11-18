@@ -99,10 +99,7 @@ charlie,invalid
         for chunk_result in read_csv(csv_data, chunksize=2):
             # Process each chunk
             sql_result = to_sql(
-                chunk_result.dataframe,
-                'chunked_data',
-                sqlite_engine,
-                if_exists='append'
+                chunk_result.dataframe, 'chunked_data', sqlite_engine, if_exists='append'
             )
             all_success.append(sql_result.success_df)
 
@@ -137,9 +134,11 @@ Bob,30
 
     def test_transform_failures_isolated(self, sqlite_engine):
         """Test that transform failures are isolated."""
-        df = pd.DataFrame({
-            'value': [1, 2, 0, 3, 4]  # 0 will cause issue
-        })
+        df = pd.DataFrame(
+            {
+                'value': [1, 2, 0, 3, 4]  # 0 will cause issue
+            }
+        )
 
         def divide_by_value(df):
             df = df.copy()
@@ -161,10 +160,12 @@ Bob,30
 
     def test_validation_errors_captured(self, sqlite_engine):
         """Test that validation errors are properly captured."""
-        df = pd.DataFrame({
-            'name': ['Alice', 'Bob', 'Charlie'],
-            'age': [25, 150, 30]  # 150 is invalid
-        })
+        df = pd.DataFrame(
+            {
+                'name': ['Alice', 'Bob', 'Charlie'],
+                'age': [25, 150, 30],  # 150 is invalid
+            }
+        )
 
         class ReasonableAgeValidator:
             def model_validate(self, record):
@@ -191,11 +192,13 @@ class TestComplexPipelines:
 
     def test_multiple_transformations(self, sqlite_engine):
         """Test pipeline with multiple transformations."""
-        df = pd.DataFrame({
-            'name': ['alice', 'bob', 'charlie'],
-            'age': [25, 30, 35],
-            'salary': [50000, 60000, 70000]
-        })
+        df = pd.DataFrame(
+            {
+                'name': ['alice', 'bob', 'charlie'],
+                'age': [25, 30, 35],
+                'salary': [50000, 60000, 70000],
+            }
+        )
 
         # Transform 1: Uppercase names
         def uppercase(df):
@@ -230,10 +233,7 @@ class TestComplexPipelines:
 
     def test_split_process_combine(self, sqlite_engine):
         """Test splitting data, processing separately, then combining."""
-        large_df = pd.DataFrame({
-            'id': range(100),
-            'value': range(100, 200)
-        })
+        large_df = pd.DataFrame({'id': range(100), 'value': range(100, 200)})
 
         # Split into parts
         parts = split(large_df, 4)
@@ -241,6 +241,7 @@ class TestComplexPipelines:
         # Process each part
         processed_parts = []
         for part in parts:
+
             def double_value(df):
                 df = df.copy()
                 df['value'] = df['value'] * 2
@@ -265,29 +266,19 @@ class TestUtilityIntegration:
 
     def test_to_records_in_pipeline(self):
         """Test using to_records in a pipeline."""
-        df = pd.DataFrame({
-            'name': ['Alice', 'Bob'],
-            'age': [25, 30]
-        })
+        df = pd.DataFrame({'name': ['Alice', 'Bob'], 'age': [25, 30]})
 
         records = to_records(df)
 
         # Use records for custom processing
-        processed = [
-            {**r, 'age': r['age'] + 1}
-            for r in records
-        ]
+        processed = [{**r, 'age': r['age'] + 1} for r in records]
 
         result_df = pd.DataFrame(processed)
         assert all(result_df['age'] == [26, 31])
 
     def test_clear_for_schema(self):
         """Test using clear to maintain schema."""
-        df = pd.DataFrame({
-            'name': ['Alice', 'Bob'],
-            'age': [25, 30],
-            'city': ['NYC', 'LA']
-        })
+        df = pd.DataFrame({'name': ['Alice', 'Bob'], 'age': [25, 30], 'city': ['NYC', 'LA']})
 
         # Get empty with same schema
         empty = clear(df)
@@ -368,18 +359,12 @@ Dave,40,dave@example.com
     def test_incremental_data_loading(self, sqlite_engine):
         """Test incremental data loading scenario."""
         # Initial data load
-        initial_data = pd.DataFrame({
-            'id': [1, 2, 3],
-            'value': ['a', 'b', 'c']
-        })
+        initial_data = pd.DataFrame({'id': [1, 2, 3], 'value': ['a', 'b', 'c']})
 
         to_sql(initial_data, 'incremental', sqlite_engine)
 
         # New data arrives
-        new_data = pd.DataFrame({
-            'id': [4, 5],
-            'value': ['d', 'e']
-        })
+        new_data = pd.DataFrame({'id': [4, 5], 'value': ['d', 'e']})
 
         # Append new data
         result = to_sql(new_data, 'incremental', sqlite_engine, if_exists='append')
@@ -389,4 +374,3 @@ Dave,40,dave@example.com
         with sqlite_engine.connect() as conn:
             all_data = pd.read_sql('SELECT * FROM incremental', conn)
             assert len(all_data) == 5
-

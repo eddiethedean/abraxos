@@ -10,66 +10,33 @@ Thank you for considering contributing to Abraxos! This document outlines the pr
    cd abraxos
    ```
 
-2. **Create a virtual environment**
+2. **Install dependencies with uv and set up the hooks**
    ```bash
-   python -m venv .venv
-   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-   ```
-
-3. **Install dependencies**
-   ```bash
-   pip install -e ".[dev,sql,validate]"
-   ```
-
-4. **Install pre-commit hooks**
-   ```bash
-   pre-commit install
+   uv sync --locked --python 3.11
+   uv run --locked pre-commit install
    ```
 
 ## Development Workflow
 
-### Running Tests
+Run the tests, lint, type check, then build the documentation and run its examples.
 
-Run the full test suite:
 ```bash
-pytest
+uv run --locked pytest -W error
+uv run --locked ruff check .
+uv run --locked ruff format --check .
+uv run --locked mypy abraxos
+uv run --locked sphinx-build -W -b html docs docs/_build/html
+uv run --locked sphinx-build -W -b doctest docs docs/_build/doctest
 ```
 
-Run with coverage report:
-```bash
-pytest --cov=abraxos --cov-report=html
-```
+Use `uv run --locked pytest tests/test_extract.py` to run a single
+file and `uv run --locked pytest --cov-report=html` for HTML coverage.
+Use `uv lock --upgrade` when updating the resolved dependencies.
 
-Run specific test file:
-```bash
-pytest tests/test_extract.py
-```
-
-### Code Quality
-
-**Linting and Formatting**
-```bash
-# Check code style
-ruff check .
-
-# Auto-fix issues
-ruff check --fix .
-
-# Format code
-ruff format .
-```
-
-**Type Checking**
-```bash
-mypy abraxos
-```
-
-### Pre-commit Hooks
-
-Pre-commit hooks will run automatically on `git commit`. To run manually:
-```bash
-pre-commit run --all-files
-```
+Set `ABRAXOS_TEST_POSTGRES` to a `postgresql+psycopg://` URL for a test
+database where the connected role can create schemas. The tests create a
+separate schema for each case. Run them with
+`uv run --locked --group postgres pytest -W error -m postgres`.
 
 ## Code Guidelines
 
@@ -96,7 +63,7 @@ pre-commit run --all-files
 
 ### Type Hints
 
-- Use Python 3.10+ syntax: `list` instead of `List`, `|` instead of `Union`
+- Target Python 3.11 and use built-in generics and `|` unions.
 - Type hint all function parameters and return values
 - Use Protocol classes for structural typing
 
@@ -114,9 +81,9 @@ pre-commit run --all-files
 
 3. **Run tests and checks**
    ```bash
-   pytest
-   ruff check .
-   mypy abraxos
+   uv run --locked pytest
+   uv run --locked ruff check .
+   uv run --locked mypy abraxos
    ```
 
 4. **Commit your changes**
@@ -124,7 +91,7 @@ pre-commit run --all-files
    git add .
    git commit -m "Add feature: description"
    ```
-   
+
    Commit message guidelines:
    - Use present tense ("Add feature" not "Added feature")
    - First line: brief summary (50 chars or less)
@@ -140,6 +107,28 @@ pre-commit run --all-files
    - Ensure all CI checks pass
    - Address review feedback
    - Keep PR focused and reasonably sized
+
+## Release Workflow
+
+Update `abraxos.__version__` and the changelog, then verify the distributions.
+
+```bash
+uv build --no-sources
+uv run --locked twine check --strict dist/*.whl dist/*.tar.gz
+```
+
+Once CI passes on the release commit, create and push a `v*.*.*` tag that
+matches the package version.
+
+```bash
+git tag -a v0.2.0 -m "Release 0.2.0"
+git push origin v0.2.0
+```
+
+Pushing the tag triggers `.github/workflows/release.yml`. It runs the same
+checks as commit CI and verifies that the built wheel's version matches the
+tag. After the checks pass, it publishes the verified distributions through
+the `pypi` environment using PyPI Trusted Publishing.
 
 ## Bug Reports
 
@@ -174,4 +163,3 @@ For feature requests:
 - Show empathy towards other community members
 
 Thank you for contributing to Abraxos! 🎉
-

@@ -1,7 +1,9 @@
 """Tests for abraxos.transform module."""
 
 import pandas as pd
+import pytest
 
+from abraxos import TransformError
 from abraxos.transform import TransformResult, transform
 
 
@@ -23,6 +25,7 @@ class TestTransformSuccess:
 
     def test_simple_transformation(self, sample_df):
         """Test a simple successful transformation."""
+
         def uppercase_names(df):
             df = df.copy()
             df['name'] = df['name'].str.upper()
@@ -36,6 +39,7 @@ class TestTransformSuccess:
 
     def test_transformation_adds_column(self, sample_df):
         """Test transformation that adds a column."""
+
         def add_doubled_age(df):
             df = df.copy()
             df['age_doubled'] = df['age'] * 2
@@ -48,6 +52,7 @@ class TestTransformSuccess:
 
     def test_transformation_with_single_row(self, single_row_df):
         """Test transformation on single-row DataFrame."""
+
         def double_age(df):
             df = df.copy()
             df['age'] = df['age'] * 2
@@ -60,6 +65,7 @@ class TestTransformSuccess:
 
     def test_transformation_with_empty_df(self, empty_df):
         """Test transformation on empty DataFrame."""
+
         def uppercase_names(df):
             df = df.copy()
             if not df.empty:
@@ -75,8 +81,97 @@ class TestTransformSuccess:
 class TestTransformFailure:
     """Tests for transformations that fail."""
 
+    def test_nested_cell_mutation_is_isolated_from_failed_attempts(self):
+        source = pd.DataFrame({'tags': [['keep'], ['bad'], ['okay']]})
+
+        def edit(frame):
+            for tags in frame['tags']:
+                tags.append('edited')
+            if any('bad' in tags for tags in frame['tags']):
+                raise ValueError('bad row')
+            return frame
+
+        result = transform(source, edit)
+
+        assert source['tags'].tolist() == [['keep'], ['bad'], ['okay']]
+        assert result.errored_df['tags'].tolist() == [['bad']]
+        assert result.success_df['tags'].tolist() == [['keep', 'edited'], ['okay', 'edited']]
+
+    def test_unsplittable_operation_gets_one_attempt(self):
+        source = pd.DataFrame({'x': [1, -1, 2]})
+        sizes = []
+
+        def center(frame):
+            sizes.append(len(frame))
+            if (frame['x'] < 0).any():
+                raise ValueError('invalid')
+            return frame.assign(centered=frame['x'] - frame['x'].mean())
+
+        result = transform(source, center, split_on_error=False)
+
+        assert sizes == [3]
+        assert len(result.errors) == 1
+        pd.testing.assert_frame_equal(result.errored_df, source)
+        assert result.success_df.empty
+
+    @pytest.mark.parametrize('result', [None, pd.Series([1])])
+    @pytest.mark.parametrize('after_split', [False, True])
+    def test_invalid_callback_outputs_raise_type_error(self, result, after_split):
+        def bad_transform(frame):
+            if after_split and len(frame) > 1:
+                raise ValueError('split to single rows')
+            return result
+
+        with pytest.raises(TypeError, match='must return a DataFrame'):
+            transform(pd.DataFrame({'x': [1, 2]}), bad_transform)
+
+    def test_incompatible_batch_outputs_identify_input_positions(self):
+        def inconsistent(frame):
+            if len(frame) > 1:
+                raise ValueError('force retry')
+            label = frame['x'].iloc[0]
+            return pd.DataFrame([[1, 2]], columns=[label, label])
+
+        with pytest.raises(ValueError, match='input positions 0:1, 1:2'):
+            transform(pd.DataFrame({'x': ['left', 'right']}), inconsistent)
+
+    def test_uncopyable_object_fails_before_calling_transformer(self):
+        class Uncopyable:
+            def __deepcopy__(self, memo):
+                raise TypeError('uncopyable')
+
+        def edit(frame):
+            pytest.fail('callback must not run when isolation fails')
+
+        with pytest.raises(TransformError, match="Cannot copy object values in column 'x'") as exc:
+            transform(pd.DataFrame({'x': [Uncopyable()]}), edit)
+        assert isinstance(exc.value.__cause__, TypeError)
+
+    def test_failed_mutation_does_not_change_input_or_retries(self):
+        df = pd.DataFrame({'value': [1, 0, 2]})
+        calls = []
+
+        def double(batch):
+            calls.append(batch['value'].tolist())
+            batch['value'] *= 2
+            if (batch['value'] == 0).any():
+                raise ValueError('Zero')
+            return batch
+
+        result = transform(df, double, chunks=5)
+
+        assert calls == [[1, 0, 2], [1], [0], [2]]
+        assert df['value'].tolist() == [1, 0, 2]
+        assert result.success_df['value'].tolist() == [2, 4]
+        assert result.errored_df['value'].tolist() == [0]
+
+    def test_rejects_chunk_count_that_cannot_split_a_failed_batch(self, sample_df):
+        with pytest.raises(ValueError, match='chunks must be at least 2'):
+            transform(sample_df, lambda frame: frame, chunks=1)
+
     def test_complete_failure(self, sample_df):
         """Test transformation that always fails."""
+
         def always_fails(df):
             raise ValueError('Transformation failed')
 
@@ -88,6 +183,7 @@ class TestTransformFailure:
 
     def test_single_row_failure(self, single_row_df):
         """Test failure on single-row DataFrame."""
+
         def always_fails(df):
             raise ValueError('Failed')
 
@@ -103,6 +199,7 @@ class TestTransformPartialFailure:
 
     def test_partial_failure_by_row(self, sample_df):
         """Test transformation that fails on specific rows."""
+
         def fail_on_bob(df):
             df = df.copy()
             if 'Bob' in df['name'].values:
@@ -246,6 +343,7 @@ class TestTransformColumnPreservation:
 
     def test_preserves_column_names(self, sample_df):
         """Test that column names are preserved."""
+
         def identity(df):
             return df.copy()
 
@@ -272,12 +370,11 @@ class TestIntegration:
 
     def test_complex_transformation_pipeline(self, sample_df):
         """Test a complex multi-step transformation."""
+
         def complex_transform(df):
             df = df.copy()
             df['name'] = df['name'].str.upper()
-            df['age_category'] = df['age'].apply(
-                lambda x: 'young' if x < 30 else 'old'
-            )
+            df['age_category'] = df['age'].apply(lambda x: 'young' if x < 30 else 'old')
             df['city_code'] = df['city'].str[:2]
             return df
 
@@ -303,4 +400,3 @@ class TestIntegration:
         assert all(r.errors == [] for r in results)
         total_rows = sum(len(r.success_df) for r in results)
         assert total_rows == len(large_df)
-

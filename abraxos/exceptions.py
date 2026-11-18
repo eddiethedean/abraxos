@@ -5,23 +5,35 @@ from __future__ import annotations
 
 class AbraxosError(Exception):
     """Base exception for all abraxos errors."""
+
     pass
 
 
 class TransformError(AbraxosError):
     """Exception raised when DataFrame transformation fails."""
+
     pass
 
 
 class ValidationError(AbraxosError):
-    """Exception raised when row validation fails."""
+    """A validation operation cannot produce a reliable result."""
+
     pass
 
 
 class LoadError(AbraxosError):
-    """Exception raised when loading data to SQL fails."""
+    """A SQL load cannot complete or reliably account for its writes."""
+
     pass
 
 
-__all__ = ['AbraxosError', 'TransformError', 'ValidationError', 'LoadError']
+class CsvParseError(AbraxosError):
+    """A CSV reader cannot reliably locate the next record boundary."""
 
+    def __init__(self, source: str, line: int, message: str) -> None:
+        self.source = source
+        self.line = line
+        super().__init__(f'{source}, line {line}: {message}')
+
+
+__all__ = ['AbraxosError', 'CsvParseError', 'TransformError', 'ValidationError', 'LoadError']

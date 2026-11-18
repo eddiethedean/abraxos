@@ -10,11 +10,9 @@ from sqlalchemy import create_engine
 @pytest.fixture
 def sample_df():
     """Create a simple sample DataFrame."""
-    return pd.DataFrame({
-        'name': ['Alice', 'Bob', 'Charlie'],
-        'age': [25, 30, 35],
-        'city': ['NYC', 'LA', 'SF']
-    })
+    return pd.DataFrame(
+        {'name': ['Alice', 'Bob', 'Charlie'], 'age': [25, 30, 35], 'city': ['NYC', 'LA', 'SF']}
+    )
 
 
 @pytest.fixture
@@ -32,10 +30,7 @@ def single_row_df():
 @pytest.fixture
 def large_df():
     """Create a larger DataFrame for testing chunking."""
-    return pd.DataFrame({
-        'id': range(100),
-        'value': [i * 2 for i in range(100)]
-    })
+    return pd.DataFrame({'id': range(100), 'value': [i * 2 for i in range(100)]})
 
 
 @pytest.fixture
@@ -68,7 +63,11 @@ def valid_csv():
 @pytest.fixture
 def sqlite_engine():
     """Create an in-memory SQLite engine."""
-    return create_engine('sqlite:///:memory:')
+    engine = create_engine('sqlite:///:memory:')
+    try:
+        yield engine
+    finally:
+        engine.dispose()
 
 
 @pytest.fixture
@@ -77,6 +76,5 @@ def sample_records():
     return [
         {'name': 'Alice', 'age': 25, 'city': 'NYC'},
         {'name': 'Bob', 'age': 30, 'city': 'LA'},
-        {'name': 'Charlie', 'age': 35, 'city': 'SF'}
+        {'name': 'Charlie', 'age': 35, 'city': 'SF'},
     ]
-

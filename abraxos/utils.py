@@ -2,20 +2,29 @@
 
 from __future__ import annotations
 
-import typing as t
+from collections.abc import Iterator
+from operator import index
+from typing import Any
 
-import numpy as np
 import pandas as pd
 
 __all__ = ['split', 'clear', 'to_records']
 
 
-def split(
-    df: pd.DataFrame,
-    i: int = 2
-) -> tuple[pd.DataFrame, ...]:
+def _partition_bounds(size: int, count: int) -> Iterator[tuple[int, int]]:
+    width, remainder = divmod(size, count)
+    start = 0
+    for part in range(count):
+        stop = start + width + (part < remainder)
+        yield start, stop
+        start = stop
+
+
+def split(df: pd.DataFrame, i: int = 2) -> tuple[pd.DataFrame, ...]:
     """
-    Splits a DataFrame into `i` approximately equal parts.
+    Splits a DataFrame into `i` approximately equal, independently assignable parts.
+
+    Nested Python objects stored in cells are shared, as with `DataFrame.copy()`.
 
     Parameters
     ----------
@@ -32,24 +41,15 @@ def split(
     Examples
     --------
     >>> import pandas as pd
-    >>> import abraxos
+    >>> from abraxos import split
     >>> df = pd.DataFrame({'A': range(10)})
-    >>> abraxos.split(df, 3)
-    (   A
-    0  0
-    1  1
-    2  2
-    3  3,
-       A
-    4  4
-    5  5
-    6  6,
-       A
-    7  7
-    8  8
-    9  9)
+    >>> [part['A'].tolist() for part in split(df, 3)]
+    [[0, 1, 2, 3], [4, 5, 6], [7, 8, 9]]
     """
-    return tuple(map(pd.DataFrame, np.array_split(df, i)))
+    count = index(i)
+    if count < 1:
+        raise ValueError('i must be at least 1')
+    return tuple(df.iloc[start:stop].copy() for start, stop in _partition_bounds(len(df), count))
 
 
 def clear(df: pd.DataFrame) -> pd.DataFrame:
@@ -68,20 +68,21 @@ def clear(df: pd.DataFrame) -> pd.DataFrame:
 
     Examples
     --------
+    >>> import pandas as pd
+    >>> from abraxos import clear
     >>> df = pd.DataFrame({'x': [1, 2, 3]})
-    >>> clear(df)
-    Empty DataFrame
-    Columns: [x]
-    Index: []
+    >>> clear(df).shape
+    (0, 1)
     """
     return df.iloc[:0]
 
 
-def to_records(df: pd.DataFrame) -> list[dict[t.Any, t.Any]]:
+def to_records(df: pd.DataFrame) -> list[dict[Any, Any]]:
     """
-    Converts a DataFrame to a list of record dictionaries, replacing NaN with None.
+    Converts a DataFrame to records, replacing missing values with None.
 
-    This is useful for inserting into databases that expect `None` for nulls.
+    Column labels must be unique. This is useful for inserting into databases
+    that expect `None` for nulls.
 
     Parameters
     ----------
@@ -95,9 +96,18 @@ def to_records(df: pd.DataFrame) -> list[dict[t.Any, t.Any]]:
 
     Examples
     --------
+    >>> import pandas as pd
+    >>> from abraxos import to_records
     >>> df = pd.DataFrame({'a': [1, None], 'b': ['x', 'y']})
     >>> to_records(df)
     [{'a': 1.0, 'b': 'x'}, {'a': None, 'b': 'y'}]
     """
-    df = df.fillna(np.nan).replace(np.nan, None)
-    return df.to_dict('records')  # type: ignore[no-any-return]
+    _require_unique_columns(df)
+    if len(df.columns) == 0:
+        return [{} for _ in df.index]
+    return df.astype(object).where(df.notna(), None).to_dict('records')
+
+
+def _require_unique_columns(df: pd.DataFrame) -> None:
+    if not df.columns.is_unique:
+        raise ValueError('DataFrame column labels must be unique')
