@@ -24,7 +24,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest, windows-latest]
         python-version: ['3.11', '3.12', '3.13', '3.14']
     env:
       UV_PYTHON: ${{ matrix.python-version }}
@@ -45,6 +45,30 @@ jobs:
           files: ./coverage.xml
           fail_ci_if_error: false
           token: ${{ secrets.CODECOV_TOKEN }}
+
+  macos:
+    name: macOS tests
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          version: ${{ env.UV_VERSION }}
+          enable-cache: true
+      - name: Test Python 3.11 through 3.14
+        shell: bash
+        run: |
+          failed=0
+          for version in 3.11 3.12 3.13 3.14; do
+            echo "::group::Python $version"
+            UV_PROJECT_ENVIRONMENT="$RUNNER_TEMP/abraxos-$version" \
+              uv run --locked --python "$version" pytest -W error -m 'not postgres' || failed=1
+            echo "::endgroup::"
+          done
+          exit "$failed"
 
   minimum-dependencies:
     runs-on: ubuntu-latest
